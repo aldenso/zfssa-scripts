@@ -3,7 +3,7 @@
 # @Author: Aldo Sotolongo
 # @Date:   2017-01-30 23:26:42
 # @Last Modified by:   Aldo Sotolongo
-# @Last Modified time: 2017-01-30 23:51:23
+# @Last Modified time: 2017-01-31 00:04:46
 # Description: Create, Delete and list snapshots defined in csv file.
 
 
@@ -168,14 +168,14 @@ def run_snaps():
         for entry in snaplist:
             create_snap(entry)
             print("=" * 79)
-    if deletesnaps:
+    elif deletesnaps:
         print("#" * 79)
         print("Deleting snapshots from {}".format(FILE))
         print("#" * 79)
         for entry in snaplist:
             delete_snap(entry)
             print("=" * 79)
-    if listsnaps:
+    elif listsnaps:
         print("#" * 79)
         print("Listing snapshots")
         print("#" * 79)
