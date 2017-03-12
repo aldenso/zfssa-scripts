@@ -3,7 +3,7 @@
 # @Author: Aldo Sotolongo
 # @Date:   2017-01-30 23:26:42
 # @Last Modified by:   Aldo Sotolongo
-# @Last Modified time: 2017-01-31 00:04:46
+# @Last Modified time: 2017-03-12 15:17:35
 # Description: Create, Delete and list snapshots defined in csv file.
 
 
@@ -89,6 +89,9 @@ def create_snap(snap):
     except HTTPError as error:
         print("Error: {}".format(error.message))
         print("--- FAILED ---")
+        if error.response.status_code == 401:
+            print("Please check your user/password!")
+            exit(1)
     except ConnectionError as error:
         print("Connection Error: {}".format(error.message))
 
@@ -111,6 +114,9 @@ def delete_snap(snap):
     except HTTPError as error:
         print("Error: {}".format(error.message))
         print("--- FAILED ---")
+        if error.response.status_code == 401:
+            print("Please check your user/password!")
+            exit(1)
     except ConnectionError as error:
         print("Connection Error: {}".format(error.message))
 
@@ -127,8 +133,8 @@ def list_snap(snap):
         req.raise_for_status()
         if len(j['snapshots']) == 0:
             print("Snapshot: {} in pool: {}, project: {} and filesystem: {}"
-                  " doesn't exists".format(snapname, pool,
-                                           project, filesystem))
+                  ", doesn't exists".format(snapname, pool,
+                                            project, filesystem))
         else:
             for i in j['snapshots']:
                 if i['name'] == snapname:
@@ -144,6 +150,10 @@ def list_snap(snap):
         if error.response.status_code == 404:
             print("share '{}' in project '{}' and pool '{}' doesn't exists."
                   .format(filesystem, project, pool))
+        if error.response.status_code == 401:
+            print("Error '{}'.".format(error.message))
+            print("Please check your user/password!")
+            exit(1)
     except ConnectionError as error:
         print("Connection Error: {}".format(error.message))
 
@@ -182,6 +192,10 @@ def run_snaps():
         for entry in snaplist:
             list_snap(entry)
             print("=" * 79)
+    else:
+        print("#" * 79)
+        print("You need to specify a snap option (--list, --create, --delete)")
+        print("#" * 79)
     delta = datetime.now() - START
     print("Finished in {} seconds".format(delta.seconds))
 
