@@ -15,9 +15,9 @@ password: password
 
 Luns file must be csv, and columns must be in the next order:
 
-"""text
+```text
 pool,project,lun,size,size_unit,blocksize,thin,targetgroup,initiatorgroup,compression,dedup
-"""
+```
 
 Example:
 
