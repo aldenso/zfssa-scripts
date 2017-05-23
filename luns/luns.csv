@@ -1,0 +1,5 @@
+#pool(str),project(str),lun(str),size(int),size_unit(str),blocksize(str),thin(bool),targetgrp(str),initiatorgrp(str),compression(str),dedup(bool)
+pool_0,project1,lun01,1,gb,128k,True,default,cluster-test,gzip,False
+pool_0,project1,lun02,2,gb,64k,True,default,cluster-test,off,False
+pool_0,project1,lun03,1024,MB,8k,False,default,default,off,False
+pool_0,project1,lun04,256,MB,512k,False,default,vmcluster,off,False
