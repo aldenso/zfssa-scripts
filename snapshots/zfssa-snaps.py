@@ -12,8 +12,9 @@ import json
 import csv
 from datetime import datetime
 import argparse
-import requests
+import logging
 import yaml
+import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import HTTPError, ConnectionError
 
@@ -27,6 +28,7 @@ START = datetime.now()
 ZFSURL = ""  # API URL (https://example:215/api)
 ZAUTH = ()   # API Authentication tuple (username, password)
 HEADER = {"Content-Type": "application/json"}
+LOGFILE = "snapshots_output.log"
 
 
 def get_args():
@@ -38,6 +40,9 @@ def get_args():
         required=True)
     parser.add_argument(
         "-f", "--file", type=str, help="Snapshots file (CSV)", required=True)
+    parser.add_argument(
+        "-p", "--progress", action="store_true", help="progress bar and logging to file",
+        required=False)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-c", "--create", action="store_true",
                        help="Create Snapshots specified in csv file")
@@ -60,6 +65,7 @@ def read_snap_file(filename):
 
 
 def read_yaml_file(configfile):
+    """Read credentials file"""
     config = {}
     try:
         config = yaml.load(file(configfile, 'r'))
@@ -76,24 +82,30 @@ def create_snap(snap):
     try:
         req = requests.post(fullurl, data=json.dumps({'name': snapname}),
                             auth=ZAUTH, verify=False, headers=HEADER)
-        print("Creating Snapshot: '{}'\npool: {}, project: {},"
-              " filesystem: {}".format(snapname, pool,
-                                       project, filesystem))
         j = json.loads(req.text)
-        if 'fault' in j:
-            if 'message' in j['fault']:
-                print("message: {}".format(j['fault']['message']))
         req.close()
         req.raise_for_status()
-        print("+++ SUCCESS +++")
+        if 'fault' in j:
+            if 'message' in j['fault']:
+                return True, "Failed creating Snapshot '{}' in filesystem '{}', project '{}',"\
+                             " pool {}' - Error {}".format(snapname, filesystem, project, pool,
+                                                           j['fault']['message'])
+        else:
+            return False, "Created Snapshot '{}' in filesystem '{}', project '{}', "\
+                          "pool '{}'".format(snapname, filesystem, project, pool)
     except HTTPError as error:
-        print("Error: {}".format(error.message))
-        print("--- FAILED ---")
         if error.response.status_code == 401:
-            print("Please check your user/password!")
-            exit(1)
+            exit("Failed creating Snapshot '{}' in filesystem '{}', project '{}', "
+                 "pool '{}' - Error {}".format(snapname, filesystem, project, pool,
+                                               error.message))
+        else:
+            return True, "Failed creating Snapshot '{}' in filesystem '{}', project '{}', "\
+                         "pool '{}' - Error {}".format(snapname, filesystem, project, pool,
+                                                       error.message)
     except ConnectionError as error:
-        print("Connection Error: {}".format(error.message))
+        return True, "Failed creating Snapshot '{}' in filesystem '{}', project '{}', "\
+                     "pool '{}' - Error {}".format(snapname, filesystem, project, pool,
+                                                   error.message)
 
 
 def delete_snap(snap):
@@ -105,24 +117,24 @@ def delete_snap(snap):
     try:
         req = requests.delete(fullurl, auth=ZAUTH, verify=False,
                               headers=HEADER)
-        print("Deleting Snapshot: '{}'\npool: {}, project: {},"
-              " filesystem: {}".format(snapname, pool,
-                                       project, filesystem))
         req.close()
         req.raise_for_status()
-        print("+++ SUCCESS +++")
+        return False, "Deleted Snapshot '{}' in filesystem '{}', project '{}', "\
+                      "pool '{}'".format(snapname, filesystem, project, project)
     except HTTPError as error:
-        print("Error: {}".format(error.message))
-        print("--- FAILED ---")
         if error.response.status_code == 401:
-            print("Please check your user/password!")
-            exit(1)
+            exit("Failed deleting snapshot '{}' in filesystem '{}', project '{}', pool '{}' "\
+                        "- Error: {}".format(snapname, filesystem, project, pool, error.message))
+        else:
+            return True, "Failed deleting snapshot '{}' in filesystem '{}', project '{}', pool '{}' "\
+                        "- Error {}".format(snapname, filesystem, project, pool, error.message)
     except ConnectionError as error:
-        print("Connection Error: {}".format(error.message))
+        return True, "Failed deleting snapshot '{}' in filesystem '{}', project '{}', pool '{}' "\
+                     "- Error {}".format(snapname, filesystem, project, pool, error.message)
 
 
 def list_snap(snap):
-    """List Snapshots specified in csv file"""
+    """List Snapshots specified in csv file (fail, message)"""
     pool, project, filesystem, snapname = snap
     fullurl = ZFSURL + "/storage/v1/pools/{}/projects/{}/filesystems/{}/"\
                        "snapshots".format(pool, project, filesystem)
@@ -132,35 +144,54 @@ def list_snap(snap):
         req.close()
         req.raise_for_status()
         if len(j['snapshots']) == 0:
-            print("Snapshot: {} in pool: {}, project: {} and filesystem: {}"
-                  ", doesn't exists".format(snapname, pool,
-                                            project, filesystem))
+            return True, "Snapshot '{}' in filesystem '{}', project '{}' and pool '{}', "\
+                         "doesn't exist".format(snapname, filesystem, project, pool)
         else:
             for i in j['snapshots']:
                 if i['name'] == snapname:
-                    print("Snapshot: {}, created at: {}\n"
-                          "pool: {}, project: {},"
-                          " filesystem: {}\nspace data: {:.2f}GB space unique:"
-                          " {:.2f}GB"
-                          .format(i['name'], i['creation'], pool, project,
-                                  filesystem, i['space_data'] / 1073741824,
-                                  i['space_unique'] / 1073741824))
+                    return False, "Snapshot '{}' in filesystem '{}', project '{}', pool '{}', "\
+                                  "created at {}, space data {:.2f}GB space unique {:.2f}GB"\
+                                  .format(i['name'], filesystem, project, pool, i['creation'],
+                                          i['space_data'] / 1073741824,
+                                          i['space_unique'] / 1073741824)
     except HTTPError as error:
-        print("Failed request to check snapshot: '{}'".format(snapname))
-        if error.response.status_code == 404:
-            print("share '{}' in project '{}' and pool '{}' doesn't exists."
-                  .format(filesystem, project, pool))
         if error.response.status_code == 401:
-            print("Error '{}'.".format(error.message))
-            print("Please check your user/password!")
-            exit(1)
+            exit("Failed listing snapshot '{}' in filesystem '{}', project '{}' and pool '{}' "
+                 "- Error {}".format(snapname, filesystem, project, pool, error.message))
+        else:
+            return True, "Failed listing snapshot '{}' in filesystem '{}', project '{}' and pool "\
+                         "'{}' - Error {}".format(snapname, filesystem, project, pool,
+                                                  error.message)
     except ConnectionError as error:
-        print("Connection Error: {}".format(error.message))
+        return True, "Failed listing snapshot '{}' in filesystem '{}', project '{}' and pool "\
+                     "'{}' - Error {}".format(snapname, filesystem, project, pool, error.message)
 
 
-def run_snaps():
+def createprogress(count):
+    """Return Bar class with max size specified"""
+    progressbar = Bar(message='Processing',
+                      suffix='%(index)d/%(max)d - remain: %(remaining)d'
+                      ' - %(percent).1f%% - %(eta)ds',
+                      max=count)
+    return progressbar
+
+def createlogger():
+    """Return logger"""
+    # create logger with 'progress bar'
+    logger = logging.getLogger('snapshots')
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(LOGFILE)
+    # create formatter and add it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    # add the handler to logger
+    logger.addHandler(fh)
+    return logger
+
+
+def run_snaps(args):
     """Run all snapshots actions"""
-    args = get_args()
     FILE = args.file
     listsnaps = args.list
     createsnaps = args.create
@@ -172,26 +203,62 @@ def run_snaps():
     ZFSURL = "https://{}:215/api".format(config['ip'])
     ZAUTH = (config['username'], config['password'])
     if createsnaps:
-        print("#" * 79)
-        print("Creating snapshots from {}".format(FILE))
-        print("#" * 79)
-        for entry in snaplist:
-            create_snap(entry)
-            print("=" * 79)
+        if args.progress:
+            progbar = createprogress(len(snaplist))
+            logger = createlogger()
+            for entry in snaplist:
+                err, msg = create_snap(entry)
+                if err:
+                    logger.warn(msg)
+                else:
+                    logger.info(msg)
+                progbar.next()
+            progbar.finish()
+        else:
+            print("#" * 79)
+            print("Creating snapshots from {}".format(FILE))
+            print("#" * 79)
+            for entry in snaplist:
+                print(create_snap(entry)[1])
+                print("=" * 79)
     elif deletesnaps:
-        print("#" * 79)
-        print("Deleting snapshots from {}".format(FILE))
-        print("#" * 79)
-        for entry in snaplist:
-            delete_snap(entry)
-            print("=" * 79)
+        if args.progress:
+            progbar = createprogress(len(snaplist))
+            logger = createlogger()
+            for entry in snaplist:
+                err, msg = delete_snap(entry)
+                if err:
+                    logger.warn(msg)
+                else:
+                    logger.info(msg)
+                progbar.next()
+            progbar.finish()
+        else:
+            print("#" * 79)
+            print("Deleting snapshots")
+            print("#" * 79)
+            for entry in snaplist:
+                print(delete_snap(entry)[1])
+                print("=" * 79)
     elif listsnaps:
-        print("#" * 79)
-        print("Listing snapshots")
-        print("#" * 79)
-        for entry in snaplist:
-            list_snap(entry)
-            print("=" * 79)
+        if args.progress:
+            progbar = createprogress(len(snaplist))
+            logger = createlogger()
+            for entry in snaplist:
+                err, msg = list_snap(entry)
+                if err:
+                    logger.warning(msg)
+                else:
+                    logger.info(msg)
+                progbar.next()
+            progbar.finish()
+        else:
+            print("#" * 79)
+            print("Listing snapshots")
+            print("#" * 79)
+            for entry in snaplist:
+                print(list_snap(entry)[1])
+                print("=" * 79)
     else:
         print("#" * 79)
         print("You need to specify a snap option (--list, --create, --delete)")
@@ -200,5 +267,13 @@ def run_snaps():
     print("Finished in {} seconds".format(delta.seconds))
 
 
+args = get_args()
+if args.progress:
+    try:
+        from progress.bar import Bar
+    except ImportError as err:
+        print("You need to install progress: pip install progress - Error: {}".format(err))
+        exit(1)
+
 if __name__ == "__main__":
-    run_snaps()
+    run_snaps(args)
