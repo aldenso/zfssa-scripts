@@ -1,10 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
+# @CreateTime: Jan 30, 2017 11:26 PM
 # @Author: Aldo Sotolongo
-# @Date:   2017-01-30 23:26:42
-# @Last Modified by:   Aldo Sotolongo
-# @Last Modified time: 2017-03-12 15:17:35
-# Description: Create, Delete and list snapshots defined in csv file.
+# @Contact: aldenso@gmail.com
+# @Last Modified By: Aldo Sotolongo
+# @Last Modified Time: May 27, 2017 5:26 PM
+# @Description: Create, Delete and list snapshots defined in csv file.
+# Dependencies: python2, requests, urllib3, pyyaml
 
 
 from __future__ import print_function
@@ -15,8 +17,8 @@ import argparse
 import logging
 import yaml
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import HTTPError, ConnectionError
+from urllib3.exceptions import InsecureRequestWarning
 
 # to disable warning
 # InsecureRequestWarning: Unverified HTTPS request is being made.
@@ -87,23 +89,23 @@ def create_snap(snap):
         req.raise_for_status()
         if 'fault' in j:
             if 'message' in j['fault']:
-                return True, "Failed creating Snapshot '{}' in filesystem '{}', project '{}',"\
-                             " pool {}' - Error {}".format(snapname, filesystem, project, pool,
-                                                           j['fault']['message'])
+                return True, "CREATE - FAIL - Snapshot '{}', filesystem '{}', project '{}', "\
+                             "pool {}' - Error {}".format(snapname, filesystem, project, pool,
+                                                          j['fault']['message'])
         else:
-            return False, "Created Snapshot '{}' in filesystem '{}', project '{}', "\
+            return False, "CREATE - SUCCESS - Snapshot '{}', filesystem '{}', project '{}', "\
                           "pool '{}'".format(snapname, filesystem, project, pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("Failed creating Snapshot '{}' in filesystem '{}', project '{}', "
+            exit("CREATE - FAIL - Snapshot '{}', filesystem '{}', project '{}', "
                  "pool '{}' - Error {}".format(snapname, filesystem, project, pool,
                                                error.message))
         else:
-            return True, "Failed creating Snapshot '{}' in filesystem '{}', project '{}', "\
+            return True, "CREATE - FAIL - Snapshot '{}', filesystem '{}', project '{}', "\
                          "pool '{}' - Error {}".format(snapname, filesystem, project, pool,
                                                        error.message)
     except ConnectionError as error:
-        return True, "Failed creating Snapshot '{}' in filesystem '{}', project '{}', "\
+        return True, "CREATE - FAIL - Snapshot '{}', filesystem '{}', project '{}', "\
                      "pool '{}' - Error {}".format(snapname, filesystem, project, pool,
                                                    error.message)
 
@@ -119,17 +121,17 @@ def delete_snap(snap):
                               headers=HEADER)
         req.close()
         req.raise_for_status()
-        return False, "Deleted Snapshot '{}' in filesystem '{}', project '{}', "\
+        return False, "DELETE - SUCCESS - Snapshot '{}', filesystem '{}', project '{}', "\
                       "pool '{}'".format(snapname, filesystem, project, project)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("Failed deleting snapshot '{}' in filesystem '{}', project '{}', pool '{}' "\
-                        "- Error: {}".format(snapname, filesystem, project, pool, error.message))
+            exit("DELETE - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool '{}' "\
+                        "- Error {}".format(snapname, filesystem, project, pool, error.message))
         else:
-            return True, "Failed deleting snapshot '{}' in filesystem '{}', project '{}', pool '{}' "\
-                        "- Error {}".format(snapname, filesystem, project, pool, error.message)
+            return True, "DELETE - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool '{}'"\
+                         " - Error {}".format(snapname, filesystem, project, pool, error.message)
     except ConnectionError as error:
-        return True, "Failed deleting snapshot '{}' in filesystem '{}', project '{}', pool '{}' "\
+        return True, "DELETE - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool '{}' "\
                      "- Error {}".format(snapname, filesystem, project, pool, error.message)
 
 
@@ -144,26 +146,31 @@ def list_snap(snap):
         req.close()
         req.raise_for_status()
         if len(j['snapshots']) == 0:
-            return True, "Snapshot '{}' in filesystem '{}', project '{}' and pool '{}', "\
-                         "doesn't exist".format(snapname, filesystem, project, pool)
+            return False, "LIST - NOTPRESENT - Snapshot '{}', filesystem '{}', project '{}' and "\
+                          "pool '{}' - Message Snapshot not present".format(snapname, filesystem,
+                                                                            project, pool)
         else:
             for i in j['snapshots']:
                 if i['name'] == snapname:
-                    return False, "Snapshot '{}' in filesystem '{}', project '{}', pool '{}', "\
-                                  "created at {}, space data {:.2f}GB space unique {:.2f}GB"\
-                                  .format(i['name'], filesystem, project, pool, i['creation'],
-                                          i['space_data'] / 1073741824,
-                                          i['space_unique'] / 1073741824)
+                    return False, "LIST - PRESENT - Snapshot '{}', filesystem '{}', project "\
+                                  "'{}', pool '{}' - Message created at {}, space data {:.2f}GB"\
+                                  " space unique {:.2f}GB".format(i['name'], filesystem, project,
+                                                                  pool, i['creation'],
+                                                                  i['space_data'] / 1073741824,
+                                                                  i['space_unique'] / 1073741824)
+        return False, "LIST - NOTPRESENT - Snapshot '{}', filesystem '{}', project '{}', pool "\
+                      "'{}' - Message Snapshot not present".format(snapname, filesystem,
+                                                                   project, pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("Failed listing snapshot '{}' in filesystem '{}', project '{}' and pool '{}' "
+            exit("LIST - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool '{}' "
                  "- Error {}".format(snapname, filesystem, project, pool, error.message))
         else:
-            return True, "Failed listing snapshot '{}' in filesystem '{}', project '{}' and pool "\
+            return True, "LIST - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool "\
                          "'{}' - Error {}".format(snapname, filesystem, project, pool,
                                                   error.message)
     except ConnectionError as error:
-        return True, "Failed listing snapshot '{}' in filesystem '{}', project '{}' and pool "\
+        return True, "LIST - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool "\
                      "'{}' - Error {}".format(snapname, filesystem, project, pool, error.message)
 
 
@@ -277,3 +284,4 @@ if args.progress:
 
 if __name__ == "__main__":
     run_snaps(args)
+
