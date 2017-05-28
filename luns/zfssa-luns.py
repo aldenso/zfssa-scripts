@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # @CreateTime: May 21, 2017 9:01 PM 
-# @Author: Aldo Sotolongo 
-# @Contact: aldenso@gmail.com 
+# @Author: Aldo Sotolongo
+# @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: May 23, 2017 8:34 AM 
+# @Last Modified Time: May 28, 2017 2:44 AM
 # @Description: Create, Delete and list luns defined in csv file.
 
 
@@ -15,9 +15,10 @@ import csv
 from datetime import datetime
 import ast
 import argparse
+import logging
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import HTTPError, ConnectionError
+from urllib3.exceptions import InsecureRequestWarning
 import yaml
 
 # to disable warning
@@ -30,6 +31,7 @@ START = datetime.now()
 ZFSURL = ""  # API URL (https://example:215/api)
 ZAUTH = ()   # API Authentication tuple (username, password)
 HEADER = {"Content-Type": "application/json"}
+LOGFILE = "luns_output.log"
 
 
 def get_args():
@@ -41,6 +43,9 @@ def get_args():
         required=True)
     parser.add_argument(
         "-f", "--file", type=str, help="luns file (CSV)", required=True)
+    parser.add_argument(
+        "-p", "--progress", action="store_true", help="progress bar and logging to file",
+        required=False)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-c", "--create", action="store_true",
                        help="Create luns specified in csv file")
@@ -88,23 +93,24 @@ def get_real_size(size, size_unit):
 
 def get_real_blocksize(blocksize):
     """Get integer blocksize from string"""
-    if "k" or "K" in blocksize:
+    if ("k" or "K") in blocksize:
         string = re.sub(r"\d+", "", blocksize)
         blocksize = int(blocksize.replace(string, "")) * 1024
         return blocksize
-    if "m" or "M" in blocksize:
+    elif ("m" or "M") in blocksize:
+        string = re.sub(r"\d+", "", blocksize)
         blocksize = int(blocksize.replace(string, "")) * 1024 * 1024
         return blocksize
     else:
         return blocksize
 
 def create_lun(fileline):
-    """Create LUN from csv file."""
-    if len(fileline) != 11:
-        print("Error in line: {} -  It needs to be 3 or 11 columns long".format(fileline))
-        return
+    """Create LUN from csv file. (err, msg)"""
+    if len(fileline) != 12:
+        return True, "DELETE - FAIL - Error in line {} It needs to be 12 columns long"\
+                     .format(fileline)
     pool, project, lun, size, size_unit, blocksize, thin, targetgroup, initiatorgroup,\
-    compression, dedup = fileline
+    compression, dedup, nodestroy = fileline
     fullurl = ZFSURL + "/storage/v1/pools/{}/projects/{}/luns"\
                     .format(pool, project)
     converted_size = get_real_size(size, size_unit)
@@ -117,105 +123,127 @@ def create_lun(fileline):
                 "targetgroup": targetgroup,
                 "initiatorgroup": initiatorgroup,
                 "compression": compression,
-                "dedup": ast.literal_eval(dedup)}
+                "dedup": ast.literal_eval(dedup),
+                "nodestroy": ast.literal_eval(nodestroy)}
         req = requests.post(fullurl, data=json.dumps(data),
                             auth=ZAUTH, verify=False, headers=HEADER)
-        print("Creating lun: '{}'\npool: {}, project: {},"
-              .format(lun, pool, project))
         j = json.loads(req.text)
         if 'fault' in j:
             if 'message' in j['fault']:
-                print("message: {}".format(j['fault']['message']))
+                return True, "CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+                             .format(lun, project, pool, j['fault']['message'])
         req.close()
         req.raise_for_status()
-        print("+++ SUCCESS +++")
+        return False, "CREATE - SUCCESS - lun '{}', project '{}', pool '{}'".format(lun, project,
+                                                                                    pool)
     except HTTPError as error:
-        print("Error: {}".format(error.message))
-        print("--- FAILED ---")
         if error.response.status_code == 401:
-            print("Please check your user/password!")
-            exit(1)
+            exit("CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+                 .format(lun, project, pool, error.message))
+        else:
+            return True, "CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+                         .format(lun, project, pool, error.message)
     except ConnectionError as error:
-        print("Connection Error: {}".format(error.message))
+        return True, "CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+                     .format(lun, project, pool, error.message)
 
 
 def delete_lun(fileline):
-    """Delete lun specified in csv file"""
-    pool = project = lun = None
-    if len(fileline) == 3:
-        pool, project, lun = fileline
-    if len(fileline) == 11:
-        pool, project, lun, _, _, _, _, _, _, _, _ = fileline
-    else:
-        print("Error in line: {} -  It needs to be 3 or 11 columns long".format(fileline))
-        return
+    """Delete lun specified in csv file (err, msg)"""
+    if len(fileline) != 3:
+        return True, "DELETE - FAIL - Error in line {} It needs to be 3 columns long"\
+                     .format(fileline)
+    pool, project, lun = fileline
     fullurl = ZFSURL + "/storage/v1/pools/{}/projects/{}/luns/{}".format(pool, project, lun)
-    if not None in [pool, project, lun]:
-        try:
-            req = requests.delete(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
-            print("Deleting lun: '{}'\npool: {}, project: {}".format(lun, pool, project))
-            req.close()
-            req.raise_for_status()
-            print("+++ SUCCESS +++")
-        except HTTPError as error:
-            print("Error: {}".format(error.message))
-            print("--- FAILED ---")
-            if error.response.status_code == 401:
-                print("Please check your user/password!")
-                exit(1)
-        except ConnectionError as error:
-            print("Connection Error: {}".format(error.message))
+    try:
+        req = requests.delete(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
+        req.close()
+        req.raise_for_status()
+        return False, "DELETE - SUCCESS - lun '{}', pool '{}', project '{}'".format(lun, pool,
+                                                                                    project)
+    except HTTPError as error:
+        if error.response.status_code == 401:
+            exit("DELETE - FAIL - lun '{}', pool '{}', project '{}' - Error {}"\
+                 .format(lun, project, pool, error.message))
+        else:
+            return True, "DELETE - FAIL - lun '{}', pool '{}', project '{}' - Error {}"\
+                         .format(lun, project, pool, error.message)
+    except ConnectionError as error:
+        return True, "DELETE - FAIL - lun '{}', pool '{}', project '{}' - Error {}"\
+                     .format(lun, project, pool, error.message)
 
 
 def list_lun(fileline):
-    """List/Show lun specified in csv file"""
+    """List/Show lun specified in csv file (err, msg)"""
     pool = project = lun = None
     if len(fileline) == 3:
         pool, project, lun = fileline
-    if len(fileline) == 11:
-        pool, project, lun, _, _, _, _, _, _, _, _ = fileline
+    elif len(fileline) == 12:
+        pool, project, lun, _, _, _, _, _, _, _, _, _ = fileline
     else:
-        print("Error in line: {} -  It needs to be 3 or 11 columns long".format(fileline))
+        return True, "LIST - FAIL - Error in line {} It needs to be 3 or 12 columns long"\
+                     .format(fileline)
     fullurl = ZFSURL + "/storage/v1/pools/{}/projects/{}/luns/{}".format(pool, project, lun)
-    if not None in [pool, project, lun]:
-        try:
-            req = requests.get(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
-            j = json.loads(req.text)
-            req.close()
-            req.raise_for_status()
-            print("name: {:15}\npool:{:8}\nproject: {:12}\nassigned number: {:4}\n"
-                  "initiatorgroup: {:18}\nvolsize: {:15}\nvolblocksize: {:5}\n"
-                  "status: {:10}\nspace_total:{:15}\nlunguid: {:40}\nlogbias: {:10}\n"
-                  "creation: {:20}\nthin: {:5}"
-                  .format(j["lun"]["name"],
-                          j["lun"]["pool"],
-                          j["lun"]["project"],
-                          j["lun"]["assignednumber"],
-                          j["lun"]["initiatorgroup"],
-                          j["lun"]["volsize"],
-                          j["lun"]["volblocksize"],
-                          j["lun"]["status"],
-                          j["lun"]["space_total"],
-                          j["lun"]["lunguid"],
-                          j["lun"]["logbias"],
-                          j["lun"]["creation"],
-                          j["lun"]["sparse"]))
-        except HTTPError as error:
-            print("Failed request to check lun: '{}'".format(lun))
-            if error.response.status_code == 404:
-                print("lun '{}' in project '{}' and pool '{}' doesn't exists."
-                      .format(lun, project, pool))
-            if error.response.status_code == 401:
-                print("Error '{}'.".format(error.message))
-                print("Please check your user/password!")
-                exit(1)
-        except ConnectionError as error:
-            print("Connection Error: {}".format(error.message))
+    try:
+        req = requests.get(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
+        j = json.loads(req.text)
+        req.close()
+        req.raise_for_status()
+        return False, "LIST - PRESENT - name '{}' project '{}' project '{}' assigned number '{}' "\
+                      "initiatorgroup '{}' volsize '{}' volblocksize '{}' status '{}' "\
+                      "space_total '{}' lunguid '{}' logbias '{}' creation '{}' thin '{}' "\
+                      "nodestroy '{}'".format(j["lun"]["name"],
+                                              j["lun"]["project"],
+                                              j["lun"]["pool"],
+                                              j["lun"]["assignednumber"],
+                                              j["lun"]["initiatorgroup"],
+                                              j["lun"]["volsize"],
+                                              j["lun"]["volblocksize"],
+                                              j["lun"]["status"],
+                                              j["lun"]["space_total"],
+                                              j["lun"]["lunguid"],
+                                              j["lun"]["logbias"],
+                                              j["lun"]["creation"],
+                                              j["lun"]["sparse"],
+                                              j["lun"]["nodestroy"])
+    except HTTPError as error:
+        if error.response.status_code == 401:
+            exit("LIST - FAIL - lun '{}', pool '{}', project, '{}' - Error {}"\
+                 .format(lun, project, pool, error.message))
+        else:
+            return True, "LIST - FAIL - lun '{}', pool '{}', project, '{}' - Error {}"\
+                         .format(lun, project, pool, error.message)
+    except ConnectionError as error:
+        return True, "LIST - FAIL - lun '{}', pool '{}', project, '{}' - Error {}"\
+                        .format(lun, project, pool, error.message)
 
 
-def run_luns():
+def createprogress(count):
+    """Return Bar class with max size specified"""
+    progressbar = Bar(message='Processing',
+                      suffix='%(index)d/%(max)d - remain: %(remaining)d'
+                      ' - %(percent).1f%% - %(eta)ds',
+                      max=count)
+    return progressbar
+
+
+def createlogger():
+    """Return logger"""
+    # create logger with 'progress bar'
+    logger = logging.getLogger('luns')
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler(LOGFILE)
+    # create formatter and add it to the handler
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    # add the handler to logger
+    logger.addHandler(fh)
+    return logger
+
+
+def run_luns(args):
     """Run all luns actions"""
-    args = get_args()
     csvfile = args.file
     listlun = args.list
     createlun = args.create
@@ -227,26 +255,62 @@ def run_luns():
     ZFSURL = "https://{}:215/api".format(config['ip'])
     ZAUTH = (config['username'], config['password'])
     if createlun:
-        print("#" * 79)
-        print("Creating luns from {}".format(csvfile))
-        print("#" * 79)
-        for entry in lunlistfromfile:
-            create_lun(entry)
-            print("=" * 79)
+        if args.progress:
+            progbar = createprogress(len(lunlistfromfile))
+            logger = createlogger()
+            for entry in lunlistfromfile:
+                err, msg = create_lun(entry)
+                if err:
+                    logger.warn(msg)
+                else:
+                    logger.info(msg)
+                progbar.next()
+            progbar.finish()
+        else:
+            print("#" * 79)
+            print("Creating luns from {}".format(csvfile))
+            print("#" * 79)
+            for entry in lunlistfromfile:
+                print(create_lun(entry)[1])
+                print("=" * 79)
     elif deletelun:
-        print("#" * 79)
-        print("Deleting luns from {}".format(csvfile))
-        print("#" * 79)
-        for entry in lunlistfromfile:
-            delete_lun(entry)
-            print("=" * 79)
+        if args.progress:
+            progbar = createprogress(len(lunlistfromfile))
+            logger = createlogger()
+            for entry in lunlistfromfile:
+                err, msg = delete_lun(entry)
+                if err:
+                    logger.warn(msg)
+                else:
+                    logger.info(msg)
+                progbar.next()
+            progbar.finish()
+        else:
+            print("#" * 79)
+            print("Deleting luns from {}".format(csvfile))
+            print("#" * 79)
+            for entry in lunlistfromfile:
+                print(delete_lun(entry)[1])
+                print("=" * 79)
     elif listlun:
-        print("#" * 79)
-        print("Listing luns")
-        print("#" * 79)
-        for entry in lunlistfromfile:
-            list_lun(entry)
-            print("=" * 79)
+        if args.progress:
+            progbar = createprogress(len(lunlistfromfile))
+            logger = createlogger()
+            for entry in lunlistfromfile:
+                err, msg = list_lun(entry)
+                if err:
+                    logger.warn(msg)
+                else:
+                    logger.info(msg)
+                progbar.next()
+            progbar.finish()
+        else:
+            print("#" * 79)
+            print("Listing luns")
+            print("#" * 79)
+            for entry in lunlistfromfile:
+                print(list_lun(entry)[1])
+                print("=" * 79)
     else:
         print("#" * 79)
         print("You need to specify an option (--list, --create, --delete)")
@@ -255,5 +319,14 @@ def run_luns():
     print("Finished in {} seconds".format(delta.seconds))
 
 
+args = get_args()
+if args.progress:
+    try:
+        from progress.bar import Bar
+    except ImportError as err:
+        print("You need to install progress: pip install progress - Error: {}".format(err))
+        exit(1)
+
 if __name__ == "__main__":
-    run_luns()
+    run_luns(args)
+
