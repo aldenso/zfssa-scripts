@@ -1,6 +1,5 @@
-pool_0,prueba1,prueba1,backup
-pool_0,test1,test,backup
-pool_0,myproject1,filesystem2,backup
-pool_0,prueba1,prueba1,backup1
-pool_0,test1,test,backup1
-pool_0,myproject1,filesystem2,backup1
+pool_0,project1,fs1,backup
+pool_0,project1,fs2,backup
+pool_0,project1,nofs,backup
+pool_0,noproject,nofs,backup
+pool_0,project1,fs3,backup

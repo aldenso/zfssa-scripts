@@ -1,10 +1,10 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # @CreateTime: Jan 30, 2017 11:26 PM
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: May 27, 2017 5:26 PM
+# @Last Modified Time: Jun 2, 2017 6:51 PM
 # @Description: Create, Delete and list snapshots defined in csv file.
 # Dependencies: python2, requests, urllib3, pyyaml
 
@@ -24,7 +24,7 @@ from urllib3.exceptions import InsecureRequestWarning
 # InsecureRequestWarning: Unverified HTTPS request is being made.
 # Adding certificate verification is strongly advised. See:
 # https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.urllib3.disable_warnings(InsecureRequestWarning)
 
 START = datetime.now()
 ZFSURL = ""  # API URL (https://example:215/api)
