@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # @CreateTime: May 21, 2017 9:01 PM 
 # @Author: Aldo Sotolongo
@@ -25,7 +25,7 @@ import yaml
 # InsecureRequestWarning: Unverified HTTPS request is being made.
 # Adding certificate verification is strongly advised. See:
 # https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.urllib3.disable_warnings(InsecureRequestWarning)
 
 START = datetime.now()
 ZFSURL = ""  # API URL (https://example:215/api)
@@ -110,7 +110,7 @@ def create_lun(fileline):
         return True, "DELETE - FAIL - Error in line {} It needs to be 12 columns long"\
                      .format(fileline)
     pool, project, lun, size, size_unit, blocksize, thin, targetgroup, initiatorgroup,\
-    compression, dedup, nodestroy = fileline
+    compression, latency, nodestroy = fileline
     fullurl = ZFSURL + "/storage/v1/pools/{}/projects/{}/luns"\
                     .format(pool, project)
     converted_size = get_real_size(size, size_unit)
@@ -123,7 +123,7 @@ def create_lun(fileline):
                 "targetgroup": targetgroup,
                 "initiatorgroup": initiatorgroup,
                 "compression": compression,
-                "dedup": ast.literal_eval(dedup),
+                "logbias": latency,
                 "nodestroy": ast.literal_eval(nodestroy)}
         req = requests.post(fullurl, data=json.dumps(data),
                             auth=ZAUTH, verify=False, headers=HEADER)
@@ -159,17 +159,17 @@ def delete_lun(fileline):
         req = requests.delete(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
         req.close()
         req.raise_for_status()
-        return False, "DELETE - SUCCESS - lun '{}', pool '{}', project '{}'".format(lun, pool,
-                                                                                    project)
+        return False, "DELETE - SUCCESS - lun '{}', project '{}', pool '{}'".format(lun, project,
+                                                                                    pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("DELETE - FAIL - lun '{}', pool '{}', project '{}' - Error {}"\
+            exit("DELETE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
                  .format(lun, project, pool, error.message))
         else:
-            return True, "DELETE - FAIL - lun '{}', pool '{}', project '{}' - Error {}"\
+            return True, "DELETE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
                          .format(lun, project, pool, error.message)
     except ConnectionError as error:
-        return True, "DELETE - FAIL - lun '{}', pool '{}', project '{}' - Error {}"\
+        return True, "DELETE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
                      .format(lun, project, pool, error.message)
 
 
@@ -189,7 +189,7 @@ def list_lun(fileline):
         j = json.loads(req.text)
         req.close()
         req.raise_for_status()
-        return False, "LIST - PRESENT - name '{}' project '{}' project '{}' assigned number '{}' "\
+        return False, "LIST - PRESENT - name '{}' project '{}' pool '{}' assigned number '{}' "\
                       "initiatorgroup '{}' volsize '{}' volblocksize '{}' status '{}' "\
                       "space_total '{}' lunguid '{}' logbias '{}' creation '{}' thin '{}' "\
                       "nodestroy '{}'".format(j["lun"]["name"],
@@ -208,13 +208,13 @@ def list_lun(fileline):
                                               j["lun"]["nodestroy"])
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("LIST - FAIL - lun '{}', pool '{}', project, '{}' - Error {}"\
+            exit("LIST - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
                  .format(lun, project, pool, error.message))
         else:
-            return True, "LIST - FAIL - lun '{}', pool '{}', project, '{}' - Error {}"\
+            return True, "LIST - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
                          .format(lun, project, pool, error.message)
     except ConnectionError as error:
-        return True, "LIST - FAIL - lun '{}', pool '{}', project, '{}' - Error {}"\
+        return True, "LIST - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
                         .format(lun, project, pool, error.message)
 
 

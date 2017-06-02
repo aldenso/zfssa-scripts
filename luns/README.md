@@ -1,7 +1,7 @@
 zfssa-luns.py
 ==============
 
-Script to create, delete and list luns.
+Script to create, delete and list luns in ZFS Storage Appliance (tested on OS8.6 and OS8.7).
 
 config or server file must be yaml.
 
@@ -16,17 +16,17 @@ password: password
 Luns file must be csv, and columns (12) must be in the next order for lun **creation** or **listing**:
 
 ```text
-pool,project,lun,size,size_unit,blocksize,thin,targetgroup,initiatorgroup,compression,dedup,nodestroy
+pool,project,lun,size,size_unit,blocksize,thin,targetgroup,initiatorgroup,compression,logbias,nodestroy
 ```
 
 Example:
 
 ```text
-#pool(str),project(str),lun(str),size(int),size_unit(str),blocksize(str),thin(bool),targetgrp(str),initiatorgrp(str),compression(str),dedup(bool),nodestroy(bool)
-pool_0,project1,lun01,1,gb,128k,True,default,cluster-test,gzip,False,False
-pool_0,project1,lun02,2,gb,64k,True,default,cluster-test,off,False,True
-pool_0,project1,lun03,1024,MB,8k,False,default,default,off,False,False
-pool_0,project1,lun04,256,MB,512k,False,default,vmcluster,off,False,False
+#pool(str),project(str),lun(str),size(int),size_unit(str),blocksize(str),thin(bool),targetgrp(str),initiatorgrp(str),compression(str),logbias(str),nodestroy(bool)
+pool_0,project1,lun01,1,gb,128k,True,default,cluster-test,gzip,latency,False
+pool_0,project1,lun02,2,gb,64k,True,default,cluster-test,off,throughput,True
+pool_0,project1,lun03,1024,MB,8k,False,default,default,off,latency,False
+pool_0,project1,lun04,256,MB,512k,False,default,vmcluster,off,latency,False
 ```
 
 **Note**: don't remove the header from the file.
@@ -61,7 +61,7 @@ Available values and types:
 * targetgroup: string
 * initiatorgroup: string
 * compression: "off", "lzjb", "gzip-2", "gzip" or "gzip-9"
-* dedup: True or False
+* logbias: "latency" or "throughput"
 * nodestroy: True or False
 
 Usage:
@@ -108,13 +108,17 @@ $ ./zfssa-luns.py -s server.yml -f luns_create.csv -l
 ###############################################################################
 Listing luns
 ###############################################################################
-LIST - PRESENT - name 'lun01' project 'project1' project 'pool_0' assigned number '3' initiatorgroup '[u'cluster-test']' volsize '1073741824.0' volblocksize '131072' status 'online' space_total '16384.0' lunguid '600144F0EF0D2BCE0000592A3D790007' logbias 'latency' creation '20170528T03:01:03' thin 'True' nodestroy 'False'
+LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '1' initiatorgroup '[u'cluster-test']' volsize '1073741824.0' volblocksize '131072' status 'online' space_total '16384.0' lunguid '600144F0A521993B00005931A73E00
+06' logbias 'latency' creation '20170602T17:58:11' thin 'True' nodestroy 'False'
 ===============================================================================
-LIST - PRESENT - name 'lun02' project 'project1' project 'pool_0' assigned number '4' initiatorgroup '[u'cluster-test']' volsize '2147483648.0' volblocksize '65536' status 'online' space_total '16384.0' lunguid '600144F0EF0D2BCE0000592A3D920008' logbias 'latency' creation '20170528T03:01:23' thin 'True' nodestroy 'True'
+LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '2' initiatorgroup '[u'cluster-test']' volsize '2147483648.0' volblocksize '65536' status 'online' space_total '16384.0' lunguid '600144F0A521993B00005931A75D000
+7' logbias 'throughput' creation '20170602T17:58:43' thin 'True' nodestroy 'True'
 ===============================================================================
-LIST - PRESENT - name 'lun03' project 'project1' project 'pool_0' assigned number '5' initiatorgroup '[u'default']' volsize '1073741824.0' volblocksize '8192' status 'online' space_total '1107820544.0' lunguid '600144F0EF0D2BCE0000592A3DAC0009' logbias 'latency' creation '20170528T03:01:49' thin 'False' nodestroy 'False'
+LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'default']' volsize '1073741824.0' volblocksize '1048576' status 'online' space_total '1074266112.0' lunguid '600144F0A521993B00005931A77F0
+008' logbias 'latency' creation '20170602T17:59:12' thin 'False' nodestroy 'False'
 ===============================================================================
-LIST - FAIL - lun 'lun04', pool 'project1', project, 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
+LIST - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.250:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
+===============================================================================
 ===============================================================================
 Finished in 0 seconds
 ```
@@ -123,15 +127,15 @@ Delete luns:
 
 ```text
 ###############################################################################
-Deleting luns from luns_destroy.csv
+Deleting luns from .\luns_destroy.csv
 ###############################################################################
-DELETE - SUCCESS - lun 'lun01', pool 'pool_0', project 'project1'
+DELETE - SUCCESS - lun 'lun01', project 'project1', pool 'pool_0'
 ===============================================================================
-DELETE - FAIL - lun 'lun02', pool 'project1', project 'pool_0' - Error 403 Client Error: Forbidden for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun02
+DELETE - FAIL - lun 'lun02', project 'project1', pool 'pool_0' - Error 403 Client Error: Forbidden for url: https://192.168.56.250:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun02
 ===============================================================================
-DELETE - SUCCESS - lun 'lun03', pool 'pool_0', project 'project1'
+DELETE - SUCCESS - lun 'lun03', project 'project1', pool 'pool_0'
 ===============================================================================
-DELETE - FAIL - lun 'lun04', pool 'project1', project 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
+DELETE - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.250:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
 ===============================================================================
 Finished in 35 seconds
 ```
