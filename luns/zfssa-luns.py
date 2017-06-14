@@ -104,6 +104,18 @@ def get_real_blocksize(blocksize):
     else:
         return blocksize
 
+def response_size(size):
+    if len(str(size)) <= 4:
+        return "{:.2f}".format(size)
+    elif len(str(size)) <= 7:
+        return "{:.2f}KB".format(size / 1024)
+    elif len(str(size)) <= 10:
+        return "{:.2f}MB".format(size / (1024 * 1024))
+    elif len(str(size)) <= 13:
+        return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
+    elif len(str(size)) > 13:
+        return "{:.2f}TB".format(size / (1024 * 1024 * 1024))
+
 def create_lun(fileline):
     """Create LUN from csv file. (err, msg)"""
     if len(fileline) != 12:
@@ -197,10 +209,10 @@ def list_lun(fileline):
                                               j["lun"]["pool"],
                                               j["lun"]["assignednumber"],
                                               j["lun"]["initiatorgroup"],
-                                              j["lun"]["volsize"],
-                                              j["lun"]["volblocksize"],
+                                              response_size(j["lun"]["volsize"]),
+                                              response_size(j["lun"]["volblocksize"]),
                                               j["lun"]["status"],
-                                              j["lun"]["space_total"],
+                                              response_size(j["lun"]["space_total"]),
                                               j["lun"]["lunguid"],
                                               j["lun"]["logbias"],
                                               j["lun"]["creation"],

@@ -108,19 +108,15 @@ $ ./zfssa-luns.py -s server.yml -f luns_create.csv -l
 ###############################################################################
 Listing luns
 ###############################################################################
-LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '1' initiatorgroup '[u'cluster-test']' volsize '1073741824.0' volblocksize '131072' status 'online' space_total '16384.0' lunguid '600144F0A521993B00005931A73E00
-06' logbias 'latency' creation '20170602T17:58:11' thin 'True' nodestroy 'False'
+LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'cluster-test']' volsize '1.00GB' volblocksize '128.00KB' status 'online' space_total '16.00KB' lunguid '600144F0EF0D2BCE00005931B8EA0001' logbias 'latency' creation '20170602T19:13:33' thin 'True' nodestroy 'False'
 ===============================================================================
-LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '2' initiatorgroup '[u'cluster-test']' volsize '2147483648.0' volblocksize '65536' status 'online' space_total '16384.0' lunguid '600144F0A521993B00005931A75D000
-7' logbias 'throughput' creation '20170602T17:58:43' thin 'True' nodestroy 'True'
+LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '4' initiatorgroup '[u'cluster-test']' volsize '2.00GB' volblocksize '64.00KB' status 'online' space_total '16.00KB' lunguid '600144F0EF0D2BCE00005931AB830002' logbias 'throughput' creation '20170602T18:16:18' thin 'True' nodestroy 'True'
 ===============================================================================
-LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'default']' volsize '1073741824.0' volblocksize '1048576' status 'online' space_total '1074266112.0' lunguid '600144F0A521993B00005931A77F0
-008' logbias 'latency' creation '20170602T17:59:12' thin 'False' nodestroy 'False'
+LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '5' initiatorgroup '[u'default']' volsize '1.00GB' volblocksize '1024.00KB' status 'online' space_total '1.00GB' lunguid '600144F0EF0D2BCE00005931B8FF0002' logbias 'latency' creation '20170602T19:13:57' thin 'False' nodestroy 'False'
 ===============================================================================
-LIST - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.250:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
+LIST - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
 ===============================================================================
-===============================================================================
-Finished in 0 seconds
+Finished in 1 seconds
 ```
 
 Delete luns:
