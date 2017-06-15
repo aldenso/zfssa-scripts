@@ -4,7 +4,7 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 14, 2017 11:40 PM
+# @Last Modified Time: Jun 15, 2017 1:18 PM
 # @Description: Create, Delete and list luns defined in csv file.
 
 
@@ -93,11 +93,11 @@ def get_real_size(size, size_unit):
 
 def get_real_blocksize(blocksize):
     """Get integer blocksize from string"""
-    if ("k" or "K") in blocksize:
+    if any(x in blocksize for x in ['k', 'K']):
         string = re.sub(r"\d+", "", blocksize)
         blocksize = int(blocksize.replace(string, "")) * 1024
         return blocksize
-    elif ("m" or "M") in blocksize:
+    elif any(x in blocksize for x in ['m', 'M']):
         string = re.sub(r"\d+", "", blocksize)
         blocksize = int(blocksize.replace(string, "")) * 1024 * 1024
         return blocksize
