@@ -4,11 +4,11 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: May 28, 2017 2:44 AM
+# @Last Modified Time: Jun 14, 2017 11:40 PM
 # @Description: Create, Delete and list luns defined in csv file.
 
 
-from __future__ import print_function
+from __future__ import print_function, division
 import re
 import json
 import csv
@@ -105,15 +105,15 @@ def get_real_blocksize(blocksize):
         return blocksize
 
 def response_size(size):
-    if len(str(size)) <= 4:
+    if len(str(size)) <= 3:
         return "{:.2f}".format(size)
-    elif len(str(size)) <= 7:
+    elif len(str(size)) <= 6:
         return "{:.2f}KB".format(size / 1024)
-    elif len(str(size)) <= 10:
+    elif len(str(size)) <= 9:
         return "{:.2f}MB".format(size / (1024 * 1024))
-    elif len(str(size)) <= 13:
+    elif len(str(size)) <= 12:
         return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
-    elif len(str(size)) > 13:
+    elif len(str(size)) > 12:
         return "{:.2f}TB".format(size / (1024 * 1024 * 1024))
 
 def create_lun(fileline):
@@ -254,7 +254,7 @@ def createlogger():
     return logger
 
 
-def run_luns(args):
+def main(args):
     """Run all luns actions"""
     csvfile = args.file
     listlun = args.list
@@ -331,14 +331,12 @@ def run_luns(args):
     print("Finished in {} seconds".format(delta.seconds))
 
 
-args = get_args()
-if args.progress:
-    try:
-        from progress.bar import Bar
-    except ImportError as err:
-        print("You need to install progress: pip install progress - Error: {}".format(err))
-        exit(1)
-
 if __name__ == "__main__":
-    run_luns(args)
-
+    args = get_args()
+    if args.progress:
+        try:
+            from progress.bar import Bar
+        except ImportError as err:
+            print("You need to install progress: pip install progress - Error: {}".format(err))
+            exit(1)
+    main(args)

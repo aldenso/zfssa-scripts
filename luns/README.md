@@ -1,4 +1,4 @@
-zfssa-luns.py
+zfssa_luns.py
 ==============
 
 Script to create, delete and list luns in ZFS Storage Appliance (tested on OS8.6 and OS8.7).
@@ -67,8 +67,8 @@ Available values and types:
 Usage:
 
 ```text
-$ ./zfssa-luns.py -h
-usage: zfssa-luns.py [-h] -s SERVER -f FILE [-p] [-c | -d | -l]
+$ ./zfssa_luns.py -h
+usage: zfssa_luns.py [-h] -s SERVER -f FILE [-p] [-c | -d | -l]
 
 Script to handle luns in ZFS Storage Appliance
 
@@ -86,7 +86,7 @@ optional arguments:
 Create luns.
 
 ```text
-$./zfssa-luns.py -s server.yml -f luns_create.csv -c
+$./zfssa_luns.py -s server.yml -f luns_create.csv -c
 ###############################################################################
 Creating luns from luns_create.csv
 ###############################################################################
@@ -104,15 +104,15 @@ Finished in 72 seconds
 List luns:
 
 ```text
-$ ./zfssa-luns.py -s server.yml -f luns_create.csv -l
+$ ./zfssa_luns.py -s server.yml -f luns_create.csv -l
 ###############################################################################
 Listing luns
 ###############################################################################
-LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'cluster-test']' volsize '1.00GB' volblocksize '128.00KB' status 'online' space_total '16.00KB' lunguid '600144F0EF0D2BCE00005931B8EA0001' logbias 'latency' creation '20170602T19:13:33' thin 'True' nodestroy 'False'
+LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'cluster-test']' volsize '1.00GB' volblocksize '128.00KB' status 'online' space_total '0.02MB' lunguid '600144F0EF0D2BCE00005931B8EA0001' logbias 'latency' creation '20170602T19:13:33' thin 'True' nodestroy 'False'
 ===============================================================================
-LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '4' initiatorgroup '[u'cluster-test']' volsize '2.00GB' volblocksize '64.00KB' status 'online' space_total '16.00KB' lunguid '600144F0EF0D2BCE00005931AB830002' logbias 'throughput' creation '20170602T18:16:18' thin 'True' nodestroy 'True'
+LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '4' initiatorgroup '[u'cluster-test']' volsize '2.00GB' volblocksize '64.00KB' status 'online' space_total '0.02MB' lunguid '600144F0EF0D2BCE00005931AB830002' logbias 'throughput' creation '20170602T18:16:18' thin 'True' nodestroy 'True'
 ===============================================================================
-LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '5' initiatorgroup '[u'default']' volsize '1.00GB' volblocksize '1024.00KB' status 'online' space_total '1.00GB' lunguid '600144F0EF0D2BCE00005931B8FF0002' logbias 'latency' creation '20170602T19:13:57' thin 'False' nodestroy 'False'
+LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '5' initiatorgroup '[u'default']' volsize '1.00GB' volblocksize '1.00MB' status 'online' space_total '1.00GB' lunguid '600144F0EF0D2BCE00005931B8FF0002' logbias 'latency' creation '20170602T19:13:57' thin 'False' nodestroy 'False'
 ===============================================================================
 LIST - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
 ===============================================================================
@@ -122,8 +122,9 @@ Finished in 1 seconds
 Delete luns:
 
 ```text
+$ ./zfssa_luns.py -s server.yml -f luns_destroy.csv -d
 ###############################################################################
-Deleting luns from .\luns_destroy.csv
+Deleting luns from luns_destroy.csv
 ###############################################################################
 DELETE - SUCCESS - lun 'lun01', project 'project1', pool 'pool_0'
 ===============================================================================
@@ -141,7 +142,7 @@ Also you can use -p (--progress option) to check the advance and all the output 
 Creating snapshots with progress option:
 
 ```text
-$./zfssa-luns.py -s server.yml -f luns_create.csv -c -p
+$./zfssa_luns.py -s server.yml -f luns_create.csv -c -p
 Processing |################                | 2/4 - remain: 2 - 50.0% - 25s
 ```
 
