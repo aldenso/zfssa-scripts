@@ -1,5 +1,12 @@
 import unittest
-from zfssa_luns import response_size, get_real_size, get_real_blocksize
+from zfssa_luns import response_size, get_real_size, get_real_blocksize, read_lun_file,\
+                       read_yaml_file
+
+LUNFILEOUTPUT = [['pool_0', 'project1', 'lun01'], ['pool_0', 'project1', 'lun02'],
+                 ['pool_0', 'project1', 'lun03'], ['pool_0', 'project1', 'lun04']]
+
+YAMLOUTPUT = {'username': 'root', 'ip': '192.168.56.150', 'password': 'password'}
+
 
 class TestCommon(unittest.TestCase):
     """Test common script functions"""
@@ -25,6 +32,14 @@ class TestCommon(unittest.TestCase):
         self.assertEqual(get_real_blocksize('8K'), 8192)
         self.assertEqual(get_real_blocksize('128k'), 131072)
         self.assertEqual(get_real_blocksize('1M'), 1048576)
+
+    def test_read_lun_file(self):
+        """Test read_lun_file function to read a test csv file"""
+        self.assertEqual(read_lun_file("luns_destroy.csv"), LUNFILEOUTPUT)
+
+    def test_read_yaml_file(self):
+        """Test read_yaml_file function to read a regular yml file"""
+        self.assertEqual(read_yaml_file("server.yml"), YAMLOUTPUT)
 
 if __name__ == "__main__":
     unittest.main()
