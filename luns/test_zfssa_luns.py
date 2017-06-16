@@ -1,6 +1,6 @@
 import unittest
 from zfssa_luns import response_size, get_real_size, get_real_blocksize, read_lun_file,\
-                       read_yaml_file
+                       read_yaml_file, create_parser
 
 LUNFILEOUTPUT = [['pool_0', 'project1', 'lun01'], ['pool_0', 'project1', 'lun02'],
                  ['pool_0', 'project1', 'lun03'], ['pool_0', 'project1', 'lun04']]
@@ -40,6 +40,21 @@ class TestCommon(unittest.TestCase):
     def test_read_yaml_file(self):
         """Test read_yaml_file function to read a regular yml file"""
         self.assertEqual(read_yaml_file("server.yml"), YAMLOUTPUT)
+
+    def test_parser_complete(self):
+        """Test create_parser to get expected CLI options"""
+        parser = create_parser()
+        argscomplete = parser.parse_args(['-s', 'test.yml', '-f', 'test.csv', '-l'])
+        result = argscomplete.server, argscomplete.file, argscomplete.list
+        self.assertEqual(result, ('test.yml', 'test.csv', True))
+
+    @unittest.expectedFailure
+    def test_parser_missing_group(self):
+        """Test create_parser to get missing CLI options"""
+        parser = create_parser()
+        argsincomplete = parser.parse_args(['-s', 'test.yml', '-f', 'test.csv'])
+        result = argsincomplete.server, argsincomplete.file, argsincomplete.list
+        self.assertEqual(result, ('test.yml', 'test.csv', True))
 
 if __name__ == "__main__":
     unittest.main()

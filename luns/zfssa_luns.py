@@ -4,7 +4,7 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 15, 2017 1:18 PM
+# @Last Modified Time: Jun 16, 2017 1:27 PM
 # @Description: Create, Delete and list luns defined in csv file.
 
 
@@ -34,7 +34,7 @@ HEADER = {"Content-Type": "application/json"}
 LOGFILE = "luns_output.log"
 
 
-def get_args():
+def create_parser():
     """Get Arguments"""
     parser = argparse.ArgumentParser(
         description="Script to handle luns in ZFS Storage Appliance")
@@ -53,8 +53,7 @@ def get_args():
                        help="Delete luns specified in csv file")
     group.add_argument("-l", "--list", action="store_true",
                        help="List/Check luns specified in csv file")
-    args = parser.parse_args()
-    return args
+    return parser
 
 
 def read_lun_file(filename):
@@ -332,7 +331,8 @@ def main(args):
 
 
 if __name__ == "__main__":
-    args = get_args()
+    parser = create_parser()
+    args = parser.parse_args()
     if args.progress:
         try:
             from progress.bar import Bar
