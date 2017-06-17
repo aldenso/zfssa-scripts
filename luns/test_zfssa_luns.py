@@ -1,6 +1,7 @@
 import unittest
+import sys
 from zfssa_luns import response_size, get_real_size, get_real_blocksize, read_lun_file,\
-                       read_yaml_file, create_parser
+                       read_yaml_file, create_parser, main
 
 LUNFILEOUTPUT = [['pool_0', 'project1', 'lun01'], ['pool_0', 'project1', 'lun02'],
                  ['pool_0', 'project1', 'lun03'], ['pool_0', 'project1', 'lun04']]
@@ -39,7 +40,7 @@ class TestCommon(unittest.TestCase):
 
     def test_read_yaml_file(self):
         """Test read_yaml_file function to read a regular yml file"""
-        self.assertEqual(read_yaml_file("server.yml"), YAMLOUTPUT)
+        self.assertEqual(read_yaml_file("serverOS86.yml"), YAMLOUTPUT)
 
     def test_parser_complete(self):
         """Test create_parser to get expected CLI options"""
@@ -56,5 +57,58 @@ class TestCommon(unittest.TestCase):
         result = argsincomplete.server, argsincomplete.file, argsincomplete.list
         self.assertEqual(result, ('test.yml', 'test.csv', True))
 
+
+CREATEOUTPUT = """###############################################################################
+Creating luns from test_create_lun.csv
+###############################################################################
+CREATE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
+===============================================================================
+"""
+
+LISTOUTPUT = "LIST - PRESENT - name 'lun01' project 'unittest' pool 'pool_0'"
+
+DELETEOUTPUT = """###############################################################################
+Deleting luns from test_destroy_lun.csv
+###############################################################################
+DELETE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
+===============================================================================
+"""
+
+
+class TestOS86(unittest.TestCase):
+    """Test with ZFSSA OS8.6 simulator, needs to be run in buffered mode"""
+
+    def test_00_main_create_lun(self):
+        """Test main with arguments to use create_lun function"""
+        parser = create_parser()
+        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_create_lun.csv', '-c'])
+        main(args)
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("need to run in buffered mode")
+        output = sys.stdout.getvalue().strip().split("\n")[:-2]  # remove (duration)
+        self.assertEqual(output, CREATEOUTPUT.split("\n")[:-2])
+
+    def test_01_main_list_lun(self):
+        """Test main with arguments to use list_lun function"""
+        parser = create_parser()
+        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_create_lun.csv', '-l'])
+        main(args)
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("need to run in buffered mode")
+        output = sys.stdout.getvalue().strip().split("\n")[3][:62]  # just part of the line
+        self.assertEqual(output, LISTOUTPUT)
+
+    def test_02_main_delete_lun(self):
+        """Test main with arguments to use delete_lun function"""
+        parser = create_parser()
+        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_destroy_lun.csv', '-d'])
+        main(args)
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("need to run in buffered mode")
+        output = sys.stdout.getvalue().strip().split("\n")[:-2]  # remove (duration)
+        self.assertEqual(output, DELETEOUTPUT.split("\n")[:-2])
+
+
 if __name__ == "__main__":
     unittest.main()
+
