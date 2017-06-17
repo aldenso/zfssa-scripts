@@ -5,7 +5,7 @@ Make sure you are in the luns path.
 
 ```text
 $ pwd
-~/zfs-scripts/luns
+~/zfssa-scripts/luns
 ```
 
 Run all test with buffered mode (required to test test_zfssa_luns.TestOS86).
@@ -77,6 +77,23 @@ Test main with arguments to use delete_lun function ... ok
 
 ----------------------------------------------------------------------
 Ran 3 tests in 23.075s
+
+OK
+```
+
+Run test for test_zfssa_luns.TestOS87
+
+```text
+$ python -m unittest -v --buffer test_zfssa_luns.TestOS87
+test_00_main_create_lun (test_zfssa_luns.TestOS87)
+Test main with arguments to use create_lun function ... ok
+test_01_main_list_lun (test_zfssa_luns.TestOS87)
+Test main with arguments to use list_lun function ... ok
+test_02_main_delete_lun (test_zfssa_luns.TestOS87)
+Test main with arguments to use delete_lun function ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 28.913s
 
 OK
 ```

@@ -108,6 +108,39 @@ class TestOS86(unittest.TestCase):
         output = sys.stdout.getvalue().strip().split("\n")[:-2]  # remove (duration)
         self.assertEqual(output, DELETEOUTPUT.split("\n")[:-2])
 
+class TestOS87(unittest.TestCase):
+    """Test with ZFSSA OS8.7 simulator, needs to be run in buffered mode"""
+
+    def test_00_main_create_lun(self):
+        """Test main with arguments to use create_lun function"""
+        parser = create_parser()
+        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_create_lun.csv', '-c'])
+        main(args)
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("need to run in buffered mode")
+        output = sys.stdout.getvalue().strip().split("\n")[:-2]  # remove (duration)
+        self.assertEqual(output, CREATEOUTPUT.split("\n")[:-2])
+
+    def test_01_main_list_lun(self):
+        """Test main with arguments to use list_lun function"""
+        parser = create_parser()
+        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_create_lun.csv', '-l'])
+        main(args)
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("need to run in buffered mode")
+        output = sys.stdout.getvalue().strip().split("\n")[3][:62]  # just part of the line
+        self.assertEqual(output, LISTOUTPUT)
+
+    def test_02_main_delete_lun(self):
+        """Test main with arguments to use delete_lun function"""
+        parser = create_parser()
+        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_destroy_lun.csv', '-d'])
+        main(args)
+        if not hasattr(sys.stdout, "getvalue"):
+            self.fail("need to run in buffered mode")
+        output = sys.stdout.getvalue().strip().split("\n")[:-2]  # remove (duration)
+        self.assertEqual(output, DELETEOUTPUT.split("\n")[:-2])
+
 
 if __name__ == "__main__":
     unittest.main()
