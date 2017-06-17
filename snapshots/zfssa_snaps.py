@@ -4,9 +4,8 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 2, 2017 6:51 PM
+# @Last Modified Time: Jun 17, 2017 11:49 AM
 # @Description: Create, Delete and list snapshots defined in csv file.
-# Dependencies: python2, requests, urllib3, pyyaml
 
 
 from __future__ import print_function
@@ -33,7 +32,7 @@ HEADER = {"Content-Type": "application/json"}
 LOGFILE = "snapshots_output.log"
 
 
-def get_args():
+def create_parser():
     """Get Arguments"""
     parser = argparse.ArgumentParser(
         description="Script to handle snapshots in ZFS Storage Appliance")
@@ -52,8 +51,7 @@ def get_args():
                        help="Delete Snapshots specified in csv file")
     group.add_argument("-l", "--list", action="store_true",
                        help="List/Check Snapshots specified in csv file")
-    args = parser.parse_args()
-    return args
+    return parser
 
 
 def read_snap_file(filename):
@@ -122,7 +120,7 @@ def delete_snap(snap):
         req.close()
         req.raise_for_status()
         return False, "DELETE - SUCCESS - Snapshot '{}', filesystem '{}', project '{}', "\
-                      "pool '{}'".format(snapname, filesystem, project, project)
+                      "pool '{}'".format(snapname, filesystem, project, pool)
     except HTTPError as error:
         if error.response.status_code == 401:
             exit("DELETE - FAIL - Snapshot '{}', filesystem '{}', project '{}', pool '{}' "\
@@ -197,7 +195,7 @@ def createlogger():
     return logger
 
 
-def run_snaps(args):
+def main(args):
     """Run all snapshots actions"""
     FILE = args.file
     listsnaps = args.list
@@ -274,14 +272,14 @@ def run_snaps(args):
     print("Finished in {} seconds".format(delta.seconds))
 
 
-args = get_args()
-if args.progress:
-    try:
-        from progress.bar import Bar
-    except ImportError as err:
-        print("You need to install progress: pip install progress - Error: {}".format(err))
-        exit(1)
-
 if __name__ == "__main__":
-    run_snaps(args)
+    parser = create_parser()
+    args = parser.parse_args()
+    if args.progress:
+        try:
+            from progress.bar import Bar
+        except ImportError as err:
+            print("You need to install progress: pip install progress - Error: {}".format(err))
+            exit(1)
+    main(args)
 
