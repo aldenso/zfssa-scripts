@@ -1,4 +1,4 @@
-zfssa-snaps.py
+zfssa_fs_snaps.py
 ==============
 
 Script to create, delete and list snapshots in filesystems for ZFS Storage Appliance (tested on OS8.6 and OS8.7).
@@ -30,8 +30,8 @@ pool_0,project1,fs3,backup
 Usage:
 
 ```text
-./zfssa-snaps.py -h
-usage: zfssa-snaps.py [-h] -s SERVER -f FILE [-p] [-c | -d | -l]
+./zfssa_fs_snaps.py -h
+usage: zfssa_fs_snaps.py [-h] -s SERVER -f FILE [-p] [-c | -d | -l]
 
 Script to handle snapshots in ZFS Storage Appliance
 
@@ -49,9 +49,9 @@ optional arguments:
 Create Snapshots.
 
 ```text
-$./zfssa-snaps.py -s server.yml -f snapshots.csv -c
+$./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -c
 ###############################################################################
-Creating snapshots from .\snapshots.csv
+Creating snapshots
 ###############################################################################
 CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs1', project 'project1', pool 'pool_0'
 ===============================================================================
@@ -71,7 +71,7 @@ Finished in 10 seconds
 List Snapshots:
 
 ```text
-$./zfssa-snaps.py -s server.yml -f snapshots.csv -l
+$./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -l
 ###############################################################################
 Listing snapshots
 ###############################################################################
@@ -91,7 +91,7 @@ Finished in 2 seconds
 Delete Snapshots:
 
 ```text
-./zfssa-snaps.py -s server.yml -f snapshots.csv -d
+./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -d
 ###############################################################################
 Deleting snapshots
 ###############################################################################
@@ -115,7 +115,7 @@ Also you can use -p (--progress option) to check the advance and all the output 
 Creating snapshots with progress option:
 
 ```text
-./zfssa-snaps.py -s server.yml -f snapshots.csv -c -p
+./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -c -p
 Processing |#####################           | 4/6 - remain: 2 - 66.7% - 6s
 ```
 

@@ -4,7 +4,7 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 17, 2017 11:49 AM
+# @Last Modified Time: Jun 18, 2017 1:43 AM
 # @Description: Create, Delete and list snapshots defined in csv file.
 
 
@@ -221,7 +221,7 @@ def main(args):
             progbar.finish()
         else:
             print("#" * 79)
-            print("Creating snapshots from {}".format(FILE))
+            print("Creating snapshots")
             print("#" * 79)
             for entry in snaplist:
                 print(create_snap(entry)[1])

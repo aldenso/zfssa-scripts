@@ -1,10 +1,12 @@
 import unittest
 import sys
-from zfssa_snaps import create_parser, main
+import os
+from snapshots.filesystems.zfssa_fs_snaps import create_parser, main
 
+HERE = os.path.abspath(os.path.dirname(__file__))
 
 CREATEOUTPUT = """###############################################################################
-Creating snapshots from test_snaps.csv
+Creating snapshots
 ###############################################################################
 CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs01', project 'unittest', pool 'pool_0'
 ===============================================================================
@@ -27,7 +29,9 @@ class TestOS86(unittest.TestCase):
     def test_00_main_create_snap(self):
         """Test main with arguments to use create_snap function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_snaps.csv', '-c'])
+        serverfile = os.path.join(HERE, 'serverOS86.yml')
+        snapsfile = os.path.join(HERE, 'test_snaps.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', snapsfile, '-c'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -37,7 +41,9 @@ class TestOS86(unittest.TestCase):
     def test_01_main_list_snap(self):
         """Test main with arguments to use list_snap function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_snaps.csv', '-l'])
+        serverfile = os.path.join(HERE, 'serverOS86.yml')
+        snapsfile = os.path.join(HERE, 'test_snaps.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', snapsfile, '-l'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -47,7 +53,9 @@ class TestOS86(unittest.TestCase):
     def test_02_main_delete_snap(self):
         """Test main with arguments to use delete_snap function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_snaps.csv', '-d'])
+        serverfile = os.path.join(HERE, 'serverOS86.yml')
+        snapsfile = os.path.join(HERE, 'test_snaps.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', snapsfile, '-d'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -61,7 +69,9 @@ class TestOS87(unittest.TestCase):
     def test_00_main_create_snap(self):
         """Test main with arguments to use create_snap function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_snaps.csv', '-c'])
+        serverfile = os.path.join(HERE, 'serverOS87.yml')
+        snapsfile = os.path.join(HERE, 'test_snaps.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', snapsfile, '-c'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -71,7 +81,9 @@ class TestOS87(unittest.TestCase):
     def test_01_main_list_snap(self):
         """Test main with arguments to use list_snap function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_snaps.csv', '-l'])
+        serverfile = os.path.join(HERE, 'serverOS87.yml')
+        snapsfile = os.path.join(HERE, 'test_snaps.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', snapsfile, '-l'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -81,7 +93,9 @@ class TestOS87(unittest.TestCase):
     def test_02_main_delete_snap(self):
         """Test main with arguments to use delete_snap function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_snaps.csv', '-d'])
+        serverfile = os.path.join(HERE, 'serverOS87.yml')
+        snapsfile = os.path.join(HERE, 'test_snaps.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', snapsfile, '-d'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -91,4 +105,3 @@ class TestOS87(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
