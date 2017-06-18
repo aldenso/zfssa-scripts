@@ -4,7 +4,7 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 16, 2017 1:27 PM
+# @Last Modified Time: Jun 18, 2017 12:58 AM
 # @Description: Create, Delete and list luns defined in csv file.
 
 
@@ -279,7 +279,7 @@ def main(args):
             progbar.finish()
         else:
             print("#" * 79)
-            print("Creating luns from {}".format(csvfile))
+            print("Creating luns")
             print("#" * 79)
             for entry in lunlistfromfile:
                 print(create_lun(entry)[1])
@@ -298,7 +298,7 @@ def main(args):
             progbar.finish()
         else:
             print("#" * 79)
-            print("Deleting luns from {}".format(csvfile))
+            print("Deleting luns")
             print("#" * 79)
             for entry in lunlistfromfile:
                 print(delete_lun(entry)[1])

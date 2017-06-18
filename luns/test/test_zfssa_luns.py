@@ -1,10 +1,12 @@
 import unittest
 import sys
-from zfssa_luns import response_size, get_real_size, get_real_blocksize, read_lun_file,\
+import os
+from luns.zfssa_luns import response_size, get_real_size, get_real_blocksize, read_lun_file,\
                        read_yaml_file, create_parser, main
 
-LUNFILEOUTPUT = [['pool_0', 'project1', 'lun01'], ['pool_0', 'project1', 'lun02'],
-                 ['pool_0', 'project1', 'lun03'], ['pool_0', 'project1', 'lun04']]
+HERE = os.path.abspath(os.path.dirname(__file__))
+
+LUNFILEOUTPUT = [['pool_0', 'unittest', 'lun01']]
 
 YAMLOUTPUT = {'username': 'root', 'ip': '192.168.56.150', 'password': 'password'}
 
@@ -36,11 +38,11 @@ class TestCommon(unittest.TestCase):
 
     def test_read_lun_file(self):
         """Test read_lun_file function to read a test csv file"""
-        self.assertEqual(read_lun_file("luns_destroy.csv"), LUNFILEOUTPUT)
+        self.assertEqual(read_lun_file(os.path.join(HERE, "test_destroy_lun.csv")), LUNFILEOUTPUT)
 
     def test_read_yaml_file(self):
         """Test read_yaml_file function to read a regular yml file"""
-        self.assertEqual(read_yaml_file("serverOS86.yml"), YAMLOUTPUT)
+        self.assertEqual(read_yaml_file(os.path.join(HERE, "serverOS86.yml")), YAMLOUTPUT)
 
     def test_parser_complete(self):
         """Test create_parser to get expected CLI options"""
@@ -59,7 +61,7 @@ class TestCommon(unittest.TestCase):
 
 
 CREATEOUTPUT = """###############################################################################
-Creating luns from test_create_lun.csv
+Creating luns
 ###############################################################################
 CREATE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
 ===============================================================================
@@ -68,7 +70,7 @@ CREATE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
 LISTOUTPUT = "LIST - PRESENT - name 'lun01' project 'unittest' pool 'pool_0'"
 
 DELETEOUTPUT = """###############################################################################
-Deleting luns from test_destroy_lun.csv
+Deleting luns
 ###############################################################################
 DELETE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
 ===============================================================================
@@ -81,7 +83,9 @@ class TestOS86(unittest.TestCase):
     def test_00_main_create_lun(self):
         """Test main with arguments to use create_lun function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_create_lun.csv', '-c'])
+        serverfile = os.path.join(HERE, 'serverOS86.yml')
+        lunscreatefile = os.path.join(HERE, 'test_create_lun.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', lunscreatefile, '-c'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -91,7 +95,9 @@ class TestOS86(unittest.TestCase):
     def test_01_main_list_lun(self):
         """Test main with arguments to use list_lun function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_create_lun.csv', '-l'])
+        serverfile = os.path.join(HERE, 'serverOS86.yml')
+        lunscreatefile = os.path.join(HERE, 'test_create_lun.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', lunscreatefile, '-l'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -101,12 +107,15 @@ class TestOS86(unittest.TestCase):
     def test_02_main_delete_lun(self):
         """Test main with arguments to use delete_lun function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS86.yml', '-f', 'test_destroy_lun.csv', '-d'])
+        serverfile = os.path.join(HERE, 'serverOS86.yml')
+        lunsdestroyfile = os.path.join(HERE, 'test_destroy_lun.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', lunsdestroyfile, '-d'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
         output = sys.stdout.getvalue().strip().split("\n")[:-2]  # remove (duration)
         self.assertEqual(output, DELETEOUTPUT.split("\n")[:-2])
+
 
 class TestOS87(unittest.TestCase):
     """Test with ZFSSA OS8.7 simulator, needs to be run in buffered mode"""
@@ -114,7 +123,9 @@ class TestOS87(unittest.TestCase):
     def test_00_main_create_lun(self):
         """Test main with arguments to use create_lun function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_create_lun.csv', '-c'])
+        serverfile = os.path.join(HERE, 'serverOS87.yml')
+        lunscreatefile = os.path.join(HERE, 'test_create_lun.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', lunscreatefile, '-c'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -124,7 +135,9 @@ class TestOS87(unittest.TestCase):
     def test_01_main_list_lun(self):
         """Test main with arguments to use list_lun function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_create_lun.csv', '-l'])
+        serverfile = os.path.join(HERE, 'serverOS87.yml')
+        lunscreatefile = os.path.join(HERE, 'test_create_lun.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', lunscreatefile, '-l'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -134,7 +147,9 @@ class TestOS87(unittest.TestCase):
     def test_02_main_delete_lun(self):
         """Test main with arguments to use delete_lun function"""
         parser = create_parser()
-        args = parser.parse_args(['-s', 'serverOS87.yml', '-f', 'test_destroy_lun.csv', '-d'])
+        serverfile = os.path.join(HERE, 'serverOS87.yml')
+        lunsdestroyfile = os.path.join(HERE, 'test_destroy_lun.csv')
+        args = parser.parse_args(['-s', serverfile, '-f', lunsdestroyfile, '-d'])
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
@@ -144,4 +159,3 @@ class TestOS87(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
