@@ -56,7 +56,6 @@ Available values and types:
 * logbias: "latency" or "throughput"
 * nodestroy: boolean
 * recordsize: "512", "1k", "2k", "4k", "8k", "16k", "32k", "64k", "128k", "256k", "512k" or "1M"
-* thin or sparse: True or False
 * readonly: boolean
 * atime: boolean
 * default_sparse (thin): boolean
@@ -65,7 +64,7 @@ Available values and types:
 * default_permissions: string
 * default_volblocksize: "512", "1k", "2k", "4k", "8k", "16k", "32k", "64k", "128k", "256k", "512k" or "1M"
 * default_volsize: interger with string, example: 1g, 512m
-* sharenfs: "off", "on" , "ro", "rw", or complex like sharenfs = "sec=sys,rw,root=@192.168.56.100/32"
+* sharenfs: "off", "on" , "ro", "rw", or complex like "sec=sys,rw,root=@192.168.56.100/32"
 * sharenfs: "off", "rw", "ro"
 
 Usage:
