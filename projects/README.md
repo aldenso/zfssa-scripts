@@ -93,11 +93,11 @@ $./zfssa_projects.py -s server.yml -f create_project.csv -c
 ###############################################################################
 Creating projects
 ###############################################################################
-CREATE - SUCCESS - project 'proj01', pool 'pool_0'
+CREATE - SUCCESS - project 'proj01' pool 'pool_0'
 ===============================================================================
-CREATE - SUCCESS - project 'proj02', pool 'pool_0'
+CREATE - SUCCESS - project 'proj02' pool 'pool_0'
 ===============================================================================
-Finished in 20 seconds
+Finished in 24 seconds
 ```
 
 List projects:
@@ -121,11 +121,11 @@ $./zfssa_projects.py -s server.yml -f destroy_project.csv -d
 ###############################################################################
 Deleting projects
 ###############################################################################
-DELETE - SUCCESS - project 'proj01', pool 'pool_0'
+DELETE - SUCCESS - project 'proj01' pool 'pool_0'
 ===============================================================================
-DELETE - SUCCESS - project 'proj02', pool 'pool_0'
+DELETE - SUCCESS - project 'proj02' pool 'pool_0'
 ===============================================================================
-Finished in 36 seconds
+Finished in 22 seconds
 ```
 
 Also you can use -p (--progress option) to check the advance and all the output will be logged to a file.
@@ -141,6 +141,6 @@ Output file example.
 
 ```text
 $ cat projects_output.log
-2017-06-18 15:44:29,144 - luns - INFO - CREATE - SUCCESS - project 'proj01', pool 'pool_0'
-2017-06-18 15:44:37,335 - luns - INFO - CREATE - SUCCESS - project 'proj02', pool 'pool_0'
+2017-06-18 17:28:15,207 - projects - INFO - CREATE - SUCCESS - project 'proj01' pool 'pool_0'
+2017-06-18 17:28:22,430 - projects - INFO - CREATE - SUCCESS - project 'proj02' pool 'pool_0'
 ```

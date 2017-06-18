@@ -88,17 +88,17 @@ Create luns.
 ```text
 $./zfssa_luns.py -s server.yml -f luns_create.csv -c
 ###############################################################################
-Creating luns from luns_create.csv
+Creating luns
 ###############################################################################
-CREATE - SUCCESS - lun 'lun01', project 'project1', pool 'pool_0'
+CREATE - SUCCESS - lun 'lun01' project 'project1' pool 'pool_0'
 ===============================================================================
-CREATE - SUCCESS - lun 'lun02', project 'project1', pool 'pool_0'
+CREATE - SUCCESS - lun 'lun02' project 'project1' pool 'pool_0'
 ===============================================================================
-CREATE - SUCCESS - lun 'lun03', project 'project1', pool 'pool_0'
+CREATE - SUCCESS - lun 'lun03' project 'project1' pool 'pool_0'
 ===============================================================================
-CREATE - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error invalid input argument (bad property value "vmcluster" (expecting one of "default", "cluster-iscsi", "cluster-clone" or "cluster-test") (encountered while attempting to run command "set initiatorgroup="vmcluster""))
+CREATE - FAIL - lun 'lun04' project 'project1' pool 'pool_0' - Error invalid input argument (bad property value "vmcluster" (expecting one of "default", "cluster-iscsi", "cluster-clone" or "cluster-test") (encountered while attempting to run command "set initiatorgroup="vmcluster""))
 ===============================================================================
-Finished in 72 seconds
+Finished in 73 seconds
 ```
 
 List luns:
@@ -108,13 +108,13 @@ $ ./zfssa_luns.py -s server.yml -f luns_create.csv -l
 ###############################################################################
 Listing luns
 ###############################################################################
-LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'cluster-test']' volsize '1.00GB' volblocksize '128.00KB' status 'online' space_total '0.02MB' lunguid '600144F0EF0D2BCE00005931B8EA0001' logbias 'latency' creation '20170602T19:13:33' thin 'True' nodestroy 'False'
+LIST - PRESENT - name 'lun01' project 'project1' pool 'pool_0' assigned number '1' initiatorgroup '[u'cluster-test']' volsize '1.00GB' volblocksize '128.00KB' status 'online' space_total '16.00KB' lunguid '600144F0EF0D2BCE00005946B13E0002' logbias 'latency' creation '20170618T16:58:27' thin 'True' nodestroy 'False'
 ===============================================================================
-LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '4' initiatorgroup '[u'cluster-test']' volsize '2.00GB' volblocksize '64.00KB' status 'online' space_total '0.02MB' lunguid '600144F0EF0D2BCE00005931AB830002' logbias 'throughput' creation '20170602T18:16:18' thin 'True' nodestroy 'True'
+LIST - PRESENT - name 'lun02' project 'project1' pool 'pool_0' assigned number '2' initiatorgroup '[u'cluster-test']' volsize '2.00GB' volblocksize '64.00KB' status 'online' space_total '16.00KB' lunguid '600144F0EF0D2BCE00005946B1520003' logbias 'throughput' creation '20170618T16:58:48' thin 'True' nodestroy 'True'
 ===============================================================================
-LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '5' initiatorgroup '[u'default']' volsize '1.00GB' volblocksize '1.00MB' status 'online' space_total '1.00GB' lunguid '600144F0EF0D2BCE00005931B8FF0002' logbias 'latency' creation '20170602T19:13:57' thin 'False' nodestroy 'False'
+LIST - PRESENT - name 'lun03' project 'project1' pool 'pool_0' assigned number '3' initiatorgroup '[u'default']' volsize '1.00GB' volblocksize '1.00MB' status 'online' space_total '1.00GB' lunguid '600144F0EF0D2BCE00005946B16A0004' logbias 'latency' creation '20170618T16:59:08' thin 'False' nodestroy 'False'
 ===============================================================================
-LIST - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
+LIST - FAIL - lun 'lun04' project 'project1' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
 ===============================================================================
 Finished in 1 seconds
 ```
@@ -124,17 +124,17 @@ Delete luns:
 ```text
 $ ./zfssa_luns.py -s server.yml -f luns_destroy.csv -d
 ###############################################################################
-Deleting luns from luns_destroy.csv
+Deleting luns
 ###############################################################################
-DELETE - SUCCESS - lun 'lun01', project 'project1', pool 'pool_0'
+DELETE - SUCCESS - lun 'lun01' project 'project1' pool 'pool_0'
 ===============================================================================
-DELETE - FAIL - lun 'lun02', project 'project1', pool 'pool_0' - Error 403 Client Error: Forbidden for url: https://192.168.56.250:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun02
+DELETE - FAIL - lun 'lun02' project 'project1' pool 'pool_0' - Error 403 Client Error: Forbidden for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun02
 ===============================================================================
-DELETE - SUCCESS - lun 'lun03', project 'project1', pool 'pool_0'
+DELETE - SUCCESS - lun 'lun03' project 'project1' pool 'pool_0'
 ===============================================================================
-DELETE - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.250:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
+DELETE - FAIL - lun 'lun04' project 'project1' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/luns/lun04
 ===============================================================================
-Finished in 35 seconds
+Finished in 40 seconds
 ```
 
 Also you can use -p (--progress option) to check the advance and all the output will be logged to a file.
@@ -150,8 +150,8 @@ Output file example.
 
 ```text
 $ cat luns_output.log
-2017-05-28 03:20:18,516 - luns - INFO - CREATE - SUCCESS - lun 'lun01', project 'project1', pool 'pool_0'
-2017-05-28 03:20:20,376 - luns - WARNING - CREATE - FAIL - lun 'lun02', project 'project1', pool 'pool_0' - Error request creates an object that already exists (share "lun02" already exists (use "select lun02" to select it) (encountered while attempting to run command "lun lun02"))
-2017-05-28 03:20:39,419 - luns - INFO - CREATE - SUCCESS - lun 'lun03', project 'project1', pool 'pool_0'
-2017-05-28 03:20:41,421 - luns - WARNING - CREATE - FAIL - lun 'lun04', project 'project1', pool 'pool_0' - Error invalid input argument (bad property value "vmcluster" (expecting one of "default", "cluster-iscsi", "cluster-clone" or "cluster-test") (encountered while attempting to run command "set initiatorgroup="vmcluster""))
+2017-06-18 17:05:09,806 - luns - INFO - CREATE - SUCCESS - lun 'lun01' project 'project1' pool 'pool_0'
+2017-06-18 17:05:11,684 - luns - WARNING - CREATE - FAIL - lun 'lun02' project 'project1' pool 'pool_0' - Error request creates an object that already exists (share "lun02" already exists (use "select lun02" to select it) (encountered while attempting to run command "lun lun02"))
+2017-06-18 17:05:35,128 - luns - INFO - CREATE - SUCCESS - lun 'lun03' project 'project1' pool 'pool_0'
+2017-06-18 17:05:37,042 - luns - WARNING - CREATE - FAIL - lun 'lun04' project 'project1' pool 'pool_0' - Error invalid input argument (bad property value "vmcluster" (expecting one of "default", "cluster-iscsi", "cluster-clone" or "cluster-test") (encountered while attempting to run command "set initiatorgroup="vmcluster""))
 ```

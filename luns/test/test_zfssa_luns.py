@@ -63,7 +63,7 @@ class TestCommon(unittest.TestCase):
 CREATEOUTPUT = """###############################################################################
 Creating luns
 ###############################################################################
-CREATE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
+CREATE - SUCCESS - lun 'lun01' project 'unittest' pool 'pool_0'
 ===============================================================================
 """
 
@@ -72,7 +72,7 @@ LISTOUTPUT = "LIST - PRESENT - name 'lun01' project 'unittest' pool 'pool_0'"
 DELETEOUTPUT = """###############################################################################
 Deleting luns
 ###############################################################################
-DELETE - SUCCESS - lun 'lun01', project 'unittest', pool 'pool_0'
+DELETE - SUCCESS - lun 'lun01' project 'unittest' pool 'pool_0'
 ===============================================================================
 """
 

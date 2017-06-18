@@ -8,17 +8,17 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 CREATEOUTPUT = """###############################################################################
 Creating snapshots
 ###############################################################################
-CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs01', project 'unittest', pool 'pool_0'
+CREATE - SUCCESS - snapshot 'backup' filesystem 'fs01' project 'unittest' pool 'pool_0'
 ===============================================================================
 """
 
-LISTOUTPUT = "LIST - PRESENT - Snapshot 'backup',\
- filesystem 'fs01', project 'unittest', pool 'pool_0'"
+LISTOUTPUT = "LIST - PRESENT - snapshot 'backup'\
+ filesystem 'fs01' project 'unittest' pool 'pool_0'"
 
 DELETEOUTPUT = """###############################################################################
 Deleting snapshots
 ###############################################################################
-DELETE - SUCCESS - Snapshot 'backup', filesystem 'fs01', project 'unittest', pool 'pool_0'
+DELETE - SUCCESS - snapshot 'backup' filesystem 'fs01' project 'unittest' pool 'pool_0'
 ===============================================================================
 """
 
@@ -47,7 +47,7 @@ class TestOS86(unittest.TestCase):
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
-        output = sys.stdout.getvalue().strip().split("\n")[3][:88]  # just part of the line
+        output = sys.stdout.getvalue().strip().split("\n")[3][:85]  # just part of the line
         self.assertEqual(output, LISTOUTPUT)
 
     def test_02_main_delete_snap(self):
@@ -87,7 +87,7 @@ class TestOS87(unittest.TestCase):
         main(args)
         if not hasattr(sys.stdout, "getvalue"):
             self.fail("need to run in buffered mode")
-        output = sys.stdout.getvalue().strip().split("\n")[3][:88]  # just part of the line
+        output = sys.stdout.getvalue().strip().split("\n")[3][:85]  # just part of the line
         self.assertEqual(output, LISTOUTPUT)
 
     def test_02_main_delete_snap(self):

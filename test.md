@@ -104,8 +104,7 @@ OK
 Run TestOS86 (buffered mode required)
 
 ```text
-$ python -m unittest -v --buffer snapshots.filesystems.test.test_zfssa_fs_sna
-ps.TestOS86
+$ python -m unittest -v --buffer snapshots.filesystems.test.test_zfssa_fs_snaps.TestOS86
 test_00_main_create_snap (snapshots.filesystems.test.test_zfssa_fs_snaps.TestOS86)
 Test main with arguments to use create_snap function ... ok
 test_01_main_list_snap (snapshots.filesystems.test.test_zfssa_fs_snaps.TestOS86)

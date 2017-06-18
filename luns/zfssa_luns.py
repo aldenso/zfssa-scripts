@@ -104,15 +104,15 @@ def get_real_blocksize(blocksize):
         return blocksize
 
 def response_size(size):
-    if len(str(size)) <= 3:
+    if len(str(int(size))) <= 3:
         return "{:.2f}".format(size)
-    elif len(str(size)) <= 6:
+    elif len(str(int(size))) <= 6:
         return "{:.2f}KB".format(size / 1024)
-    elif len(str(size)) <= 9:
+    elif len(str(int(size))) <= 9:
         return "{:.2f}MB".format(size / (1024 * 1024))
-    elif len(str(size)) <= 12:
+    elif len(str(int(size))) <= 12:
         return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
-    elif len(str(size)) > 12:
+    elif len(str(int(size))) > 12:
         return "{:.2f}TB".format(size / (1024 * 1024 * 1024))
 
 def create_lun(fileline):
@@ -141,21 +141,21 @@ def create_lun(fileline):
         j = json.loads(req.text)
         if 'fault' in j:
             if 'message' in j['fault']:
-                return True, "CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+                return True, "CREATE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                              .format(lun, project, pool, j['fault']['message'])
         req.close()
         req.raise_for_status()
-        return False, "CREATE - SUCCESS - lun '{}', project '{}', pool '{}'".format(lun, project,
-                                                                                    pool)
+        return False, "CREATE - SUCCESS - lun '{}' project '{}' pool '{}'".format(lun, project,
+                                                                                  pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+            exit("CREATE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                  .format(lun, project, pool, error.message))
         else:
-            return True, "CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+            return True, "CREATE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                          .format(lun, project, pool, error.message)
     except ConnectionError as error:
-        return True, "CREATE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+        return True, "CREATE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                      .format(lun, project, pool, error.message)
 
 
@@ -170,17 +170,17 @@ def delete_lun(fileline):
         req = requests.delete(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
         req.close()
         req.raise_for_status()
-        return False, "DELETE - SUCCESS - lun '{}', project '{}', pool '{}'".format(lun, project,
-                                                                                    pool)
+        return False, "DELETE - SUCCESS - lun '{}' project '{}' pool '{}'".format(lun, project,
+                                                                                  pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("DELETE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+            exit("DELETE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                  .format(lun, project, pool, error.message))
         else:
-            return True, "DELETE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+            return True, "DELETE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                          .format(lun, project, pool, error.message)
     except ConnectionError as error:
-        return True, "DELETE - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+        return True, "DELETE - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                      .format(lun, project, pool, error.message)
 
 
@@ -219,13 +219,13 @@ def list_lun(fileline):
                                               j["lun"]["nodestroy"])
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("LIST - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+            exit("LIST - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                  .format(lun, project, pool, error.message))
         else:
-            return True, "LIST - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+            return True, "LIST - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                          .format(lun, project, pool, error.message)
     except ConnectionError as error:
-        return True, "LIST - FAIL - lun '{}', project '{}', pool '{}' - Error {}"\
+        return True, "LIST - FAIL - lun '{}' project '{}' pool '{}' - Error {}"\
                         .format(lun, project, pool, error.message)
 
 

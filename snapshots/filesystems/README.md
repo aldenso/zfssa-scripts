@@ -53,19 +53,17 @@ $./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -c
 ###############################################################################
 Creating snapshots
 ###############################################################################
-CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs1', project 'project1', pool 'pool_0'
+CREATE - SUCCESS - snapshot 'backup' filesystem 'fs1' project 'project1' pool 'pool_0'
 ===============================================================================
-CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs2', project 'project1', pool 'pool_0'
+CREATE - SUCCESS - snapshot 'backup' filesystem 'fs2' project 'project1' pool 'pool_0'
 ===============================================================================
-CREATE - FAIL - Snapshot 'backup', filesystem 'nofs', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/s
-torage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots
+CREATE - FAIL - snapshot 'backup' filesystem 'nofs' project 'project1' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots
 ===============================================================================
-CREATE - FAIL - Snapshot 'backup', filesystem 'nofs', project 'noproject', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/
-storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots
+CREATE - FAIL - snapshot 'backup' filesystem 'nofs' project 'noproject' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots
 ===============================================================================
-CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs3', project 'project1', pool 'pool_0'
+CREATE - SUCCESS - snapshot 'backup' filesystem 'fs3' project 'project1' pool 'pool_0'
 ===============================================================================
-Finished in 10 seconds
+Finished in 8 seconds
 ```
 
 List Snapshots:
@@ -75,17 +73,17 @@ $./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -l
 ###############################################################################
 Listing snapshots
 ###############################################################################
-LIST - PRESENT - Snapshot 'backup', filesystem 'fs1', project 'project1', pool 'pool_0' - Message created at 20170602T18:58:03, space data 0.00GB space unique 0.00GB
+LIST - PRESENT - snapshot 'backup' filesystem 'fs1' project 'project1' pool 'pool_0' created_at '20170618T17:12:46' space_data '31.00KB' space_unique '0.00'
 ===============================================================================
-LIST - PRESENT - Snapshot 'backup', filesystem 'fs2', project 'project1', pool 'pool_0' - Message created at 20170602T18:58:07, space data 0.00GB space unique 0.00GB
+LIST - PRESENT - snapshot 'backup' filesystem 'fs2' project 'project1' pool 'pool_0' created_at '20170618T17:12:48' space_data '31.00KB' space_unique '0.00'
 ===============================================================================
-LIST - FAIL - Snapshot 'backup', filesystem 'nofs', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots
+LIST - FAIL - snapshot 'backup' filesystem 'nofs' project 'project1' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots
 ===============================================================================
-LIST - FAIL - Snapshot 'backup', filesystem 'nofs', project 'noproject', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots
+LIST - FAIL - snapshot 'backup' filesystem 'nofs' project 'noproject' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots
 ===============================================================================
-LIST - PRESENT - Snapshot 'backup', filesystem 'fs3', project 'project1', pool 'pool_0' - Message created at 20170602T18:58:12, space data 0.00GB space unique 0.00GB
+LIST - PRESENT - snapshot 'backup' filesystem 'fs3' project 'project1' pool 'pool_0' created_at '20170618T17:12:52' space_data '31.00KB' space_unique '0.00'
 ===============================================================================
-Finished in 2 seconds
+Finished in 1 seconds
 ```
 
 Delete Snapshots:
@@ -95,19 +93,17 @@ Delete Snapshots:
 ###############################################################################
 Deleting snapshots
 ###############################################################################
-DELETE - SUCCESS - Snapshot 'backup', filesystem 'fs1', project 'project1', pool 'project1'
+DELETE - SUCCESS - snapshot 'backup' filesystem 'fs1' project 'project1' pool 'pool_0'
 ===============================================================================
-DELETE - SUCCESS - Snapshot 'backup', filesystem 'fs2', project 'project1', pool 'project1'
+DELETE - SUCCESS - snapshot 'backup' filesystem 'fs2' project 'project1' pool 'pool_0'
 ===============================================================================
-DELETE - FAIL - Snapshot 'backup', filesystem 'nofs', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https
-://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots/backup
+DELETE - FAIL - snapshot 'backup' filesystem 'nofs' project 'project1' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots/backup
 ===============================================================================
-DELETE - FAIL - Snapshot 'backup', filesystem 'nofs', project 'noproject', pool 'pool_0' - Error 404 Client Error: Not Found for url: http
-s://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots/backup
+DELETE - FAIL - snapshot 'backup' filesystem 'nofs' project 'noproject' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots/backup
 ===============================================================================
-DELETE - SUCCESS - Snapshot 'backup', filesystem 'fs3', project 'project1', pool 'project1'
+DELETE - SUCCESS - snapshot 'backup' filesystem 'fs3' project 'project1' pool 'pool_0'
 ===============================================================================
-Finished in 31 seconds
+Finished in 20 seconds
 ```
 
 Also you can use -p (--progress option) to check the advance and all the output will be logged to a file.
@@ -116,16 +112,16 @@ Creating snapshots with progress option:
 
 ```text
 ./zfssa_fs_snaps.py -s server.yml -f snapshots.csv -c -p
-Processing |#####################           | 4/6 - remain: 2 - 66.7% - 6s
+Processing |#####################           | 4/5 - remain: 2 - 80.0% - 6s
 ```
 
 Output file example.
 
 ```text
 cat snapshots_output.log
-2017-06-02 19:02:14,644 - snapshots - INFO - CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs1', project 'project1', pool 'pool_0'
-2017-06-02 19:02:20,207 - snapshots - INFO - CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs2', project 'project1', pool 'pool_0'
-2017-06-02 19:02:20,473 - snapshots - WARNING - CREATE - FAIL - Snapshot 'backup', filesystem 'nofs', project 'project1', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots
-2017-06-02 19:02:20,677 - snapshots - WARNING - CREATE - FAIL - Snapshot 'backup', filesystem 'nofs', project 'noproject', pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots
-2017-06-02 19:02:23,642 - snapshots - INFO - CREATE - SUCCESS - Snapshot 'backup', filesystem 'fs3', project 'project1', pool 'pool_0'
+2017-06-18 17:17:17,805 - snapshots - INFO - CREATE - SUCCESS - snapshot 'backup' filesystem 'fs1' project 'project1' pool 'pool_0'
+2017-06-18 17:17:19,614 - snapshots - INFO - CREATE - SUCCESS - snapshot 'backup' filesystem 'fs2' project 'project1' pool 'pool_0'
+2017-06-18 17:17:19,816 - snapshots - WARNING - CREATE - FAIL - snapshot 'backup' filesystem 'nofs' project 'project1' pool 'pool_0' - Error 404 Client Error: Not Found for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/project1/filesystems/nofs/snapshots
+2017-06-18 17:17:21,457 - snapshots - WARNING - CREATE - FAIL - snapshot 'backup' filesystem 'nofs' project 'noproject' pool 'pool_0' - Error 404 Client Error: NotFound for url: https://192.168.56.150:215/api/storage/v1/pools/pool_0/projects/noproject/filesystems/nofs/snapshots
+2017-06-18 17:17:23,266 - snapshots - INFO - CREATE - SUCCESS - snapshot 'backup' filesystem 'fs3' project 'project1' pool 'pool_0'
 ```

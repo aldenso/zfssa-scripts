@@ -132,20 +132,20 @@ def create_project(fileline):
         j = json.loads(req.text)
         if 'fault' in j:
             if 'message' in j['fault']:
-                return True, "CREATE - FAIL - project '{}', pool '{}' - Error {}"\
+                return True, "CREATE - FAIL - project '{}' pool '{}' - Error {}"\
                              .format(project, pool, j['fault']['message'])
         req.close()
         req.raise_for_status()
-        return False, "CREATE - SUCCESS - project '{}', pool '{}'".format(project, pool)
+        return False, "CREATE - SUCCESS - project '{}' pool '{}'".format(project, pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("CREATE - FAIL - project '{}', pool '{}' - Error {}".format(project, pool,
-                                                                             error.message))
+            exit("CREATE - FAIL - project '{}' pool '{}' - Error {}".format(project, pool,
+                                                                            error.message))
         else:
-            return True, "CREATE - FAIL - project '{}', pool '{}' - Error {}"\
+            return True, "CREATE - FAIL - project '{}' pool '{}' - Error {}"\
                          .format(project, pool, error.message)
     except ConnectionError as error:
-        return True, "CREATE - FAIL - project '{}', pool '{}' - Error {}"\
+        return True, "CREATE - FAIL - project '{}' pool '{}' - Error {}"\
                      .format(project, pool, error.message)
 
 
@@ -160,16 +160,16 @@ def delete_project(fileline):
         req = requests.delete(fullurl, auth=ZAUTH, verify=False, headers=HEADER)
         req.close()
         req.raise_for_status()
-        return False, "DELETE - SUCCESS - project '{}', pool '{}'".format(project, pool)
+        return False, "DELETE - SUCCESS - project '{}' pool '{}'".format(project, pool)
     except HTTPError as error:
         if error.response.status_code == 401:
-            exit("DELETE - FAIL - project '{}', pool '{}' - Error {}".format(project, pool,
+            exit("DELETE - FAIL - project '{}' pool '{}' - Error {}".format(project, pool,
                                                                              error.message))
         else:
-            return True, "DELETE - FAIL - project '{}', pool '{}' - Error {}"\
+            return True, "DELETE - FAIL - project '{}' pool '{}' - Error {}"\
                          .format(project, pool, error.message)
     except ConnectionError as error:
-        return True, "DELETE - FAIL - project '{}', pool '{}' - Error {}"\
+        return True, "DELETE - FAIL - project '{}' pool '{}' - Error {}"\
                      .format(project, pool, error.message)
 
 
@@ -219,10 +219,10 @@ def list_projects(fileline):
             exit("LIST - FAIL - project '{}', pool '{}' - Error {}".format(project, pool,
                                                                            error.message))
         else:
-            return True, "LIST - FAIL - project '{}', pool '{}' - Error {}"\
+            return True, "LIST - FAIL - project '{}' pool '{}' - Error {}"\
                          .format(project, pool, error.message)
     except ConnectionError as error:
-        return True, "LIST - FAIL - project '{}', pool '{}' - Error {}"\
+        return True, "LIST - FAIL - project '{}' pool '{}' - Error {}"\
                         .format(project, pool, error.message)
 
 
@@ -238,7 +238,7 @@ def createprogress(count):
 def createlogger():
     """Return logger"""
     # create logger with 'progress bar'
-    logger = logging.getLogger('luns')
+    logger = logging.getLogger('projects')
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
     fh = logging.FileHandler(LOGFILE)
