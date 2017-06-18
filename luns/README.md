@@ -139,7 +139,7 @@ Finished in 35 seconds
 
 Also you can use -p (--progress option) to check the advance and all the output will be logged to a file.
 
-Creating snapshots with progress option:
+Creating luns with progress option:
 
 ```text
 $./zfssa_luns.py -s server.yml -f luns_create.csv -c -p

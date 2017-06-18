@@ -4,7 +4,7 @@
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
 # @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 18, 2017 12:58 AM
+# @Last Modified Time: Jun 18, 2017 2:05 PM
 # @Description: Create, Delete and list luns defined in csv file.
 
 
@@ -118,7 +118,7 @@ def response_size(size):
 def create_lun(fileline):
     """Create LUN from csv file. (err, msg)"""
     if len(fileline) != 12:
-        return True, "DELETE - FAIL - Error in line {} It needs to be 12 columns long"\
+        return True, "CREATE - FAIL - Error in line {} It needs to be 12 columns long"\
                      .format(fileline)
     pool, project, lun, size, size_unit, blocksize, thin, targetgroup, initiatorgroup,\
     compression, latency, nodestroy = fileline
