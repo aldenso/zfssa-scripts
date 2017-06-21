@@ -68,8 +68,13 @@ def printdata(data, datatype):
         print("#" * 100)
         print("ZFS Storage Appliance version")
         print("#" * 100)
-        print("{:20} {:30}".format("version", "ak_version"))
-        print("{:20} {:30}".format(data['version']['product'], data['version']['ak_version']))
+        print("{:22} {:22} {:25} {:12} {:10}".format("nodename", "product", "version", "csn",
+                                                     "sp_version"))
+        print("{:22} {:22} {:25} {:12} {:10}".format(data['version']['nodename'],
+                                                     data['version']['product'],
+                                                     data['version']['version'],
+                                                     data['version']['csn'],
+                                                     data['version']['sp_version']))
     elif datatype == "datalinks":
         print("#" * 100)
         print("datalink info")
