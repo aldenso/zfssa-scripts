@@ -85,7 +85,7 @@ def response_size(size):
     elif len(str(int(size))) <= 12:
         return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
     elif len(str(int(size))) > 12:
-        return "{:.2f}TB".format(size / (1024 * 1024 * 1024))
+        return "{:.2f}TB".format(size / (1024 * 1024 * 1024 * 1024))
 
 
 def create_project(fileline):
