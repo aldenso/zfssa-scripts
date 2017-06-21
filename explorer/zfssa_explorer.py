@@ -74,29 +74,42 @@ def printdata(data, datatype):
         print("#" * 100)
         print("datalink info")
         print("#" * 100)
-        print("{:10} {:20} {:8}".format("class", "label", "speed"))
+        print("{:15} {:10} {:20} {:8} {:5} {:5}".format("datalink", "class", "label", "speed",
+                                                        "id", "mtu"))
         for dlink in data['datalinks']:
-            print("{:10} {:20} {:8}".format(dlink['class'], dlink['label'], dlink['speed']))
+            if dlink['class'] != "vlan":
+                print("{:15} {:10} {:20} {:8} {:5} {:5}".format(dlink['datalink'], dlink['class'],
+                                                                dlink['label'], dlink['speed'],
+                                                                "", dlink['mtu']))
+            else:
+                print("{:15} {:10} {:20} {:8} {:5} {:5}".format(dlink['datalink'], dlink['class'],
+                                                                dlink['label'], "", dlink['id'],
+                                                                dlink['mtu']))
     elif datatype == "devices":
         print("#" * 100)
         print("devices info")
         print("#" * 100)
-        print("{:10} {:20} {:32} {:8} {:16} {:6}".format("active", "duplex", "mac", "media",
-                                                         "speed", "up"))
+        print("{:10} {:5} {:15} {:25} {:10} {:12} {:4}".format("device", "active", "duplex", "mac",
+                                                               "media", "speed", "up"))
         for dev in data['devices']:
-            print("{:10} {:10} {:32} {:10} {:8} {:5}".format(dev['active'], dev['duplex'],
-                                                             dev['factory_mac'], dev['media'],
-                                                             dev['speed'], dev['up']))
+            print("{:10} {:5} {:15} {:25} {:10} {:12} {:4}".format(dev['device'], dev['active'],
+                                                                   dev['duplex'],
+                                                                   dev['factory_mac'],
+                                                                   dev['media'], dev['speed'],
+                                                                   dev['up']))
     elif datatype == "interfaces":
         print("#" * 100)
         print("interfaces info")
         print("#" * 100)
-        print("{:10} {:15} {:8} {:8} {:40} {:5}".format("class", "label", "admin", "state",
-                                                        "v4addrs", "enable"))
-        for dev in data['interfaces']:
-            print("{:10} {:15} {:8} {:8} {:40} {:5}".format(dev['class'], dev['label'],
-                                                            dev['admin'], dev['state'],
-                                                            dev['v4addrs'], dev['enable']))
+        print("{:12} {:10} {:20} {:5} {:8} {:25} {:5}".format("interface", "class", "label",
+                                                              "admin", "state", "v4addrs",
+                                                              "enable"))
+        for iface in data['interfaces']:
+            print("{:12} {:10} {:20} {:5} {:8} {:25} {:5}".format(iface['interface'],
+                                                                  iface['class'], iface['label'],
+                                                                  iface['admin'], iface['state'],
+                                                                  iface['v4addrs'],
+                                                                  iface['enable']))
 
 
 def main(args):
