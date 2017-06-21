@@ -138,6 +138,8 @@ def main(args):
                 print(exc)
             else:
                 printdata(data, datatype)
+        delta = datetime.now() - START
+        print("Finished in {} seconds".format(delta.seconds))
 
 
 if __name__ == "__main__":
