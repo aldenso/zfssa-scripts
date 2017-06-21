@@ -56,6 +56,19 @@ def read_yaml_file(configfile):
     return config
 
 
+def response_size(size):
+    if len(str(int(size))) <= 3:
+        return "{:.2f}".format(size)
+    elif len(str(int(size))) <= 6:
+        return "{:.2f}KB".format(size / 1024)
+    elif len(str(int(size))) <= 9:
+        return "{:.2f}MB".format(size / (1024 * 1024))
+    elif len(str(int(size))) <= 12:
+        return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
+    elif len(str(int(size))) > 12:
+        return "{:.2f}TB".format(size / (1024 * 1024 * 1024 * 1024))
+
+
 def fetch(url, timeout, datatype):
     """Fetch data from zfs api"""
     req = requests.get(url, timeout=timeout, auth=ZAUTH, verify=False, headers=HEADER)
@@ -115,6 +128,41 @@ def printdata(data, datatype):
                                                                   iface['admin'], iface['state'],
                                                                   iface['v4addrs'],
                                                                   iface['enable']))
+    elif datatype == "projects":
+        print("#" * 100)
+        print("projects info")
+        print("#" * 100)
+        print("{:15} {:25} {:8} {:10} {:10} {:10}".format("name", "mountpoint", "pool", "quota",
+                                                          "reserv", "space_total"))
+        for proj in data['projects']:
+            print("{:15} {:25} {:8} {:10} {:10} {:10}"\
+                  .format(proj['name'], proj['mountpoint'], proj['pool'],
+                          response_size(proj['quota']), response_size(proj['reservation']),
+                          response_size(proj['space_total'])))
+    elif datatype == "luns":
+        print("#" * 100)
+        print("luns info")
+        print("#" * 100)
+        print("{:10} {:15} {:8} {:10} {:10} {:12} {:8} {:25}".format("name", "project", "pool",
+                                                                     "volsize", "vblocksize",
+                                                                     "initiatorgroup", "status",
+                                                                     "lunguid"))
+        for lun in data['luns']:
+            print("{:10} {:15} {:8} {:10} {:10} {:12} {:8} {:25}"\
+                  .format(lun['name'], lun['project'], lun['pool'], response_size(lun['volsize']),
+                          response_size(lun['volblocksize']), lun['initiatorgroup'], lun['status'],
+                          lun['lunguid']))
+    elif datatype == "filesystems":
+        print("#" * 100)
+        print("filesystems info")
+        print("#" * 100)
+        print("{:10} {:15} {:8} {:10} {:10} {:10} {:12}"\
+              .format("name", "project", "pool", "quota", "reserv", "space_total", "mountpoint"))
+        for fs in data['filesystems']:
+            print("{:10} {:15} {:8} {:10} {:10} {:10} {:12}"\
+                  .format(fs['name'], fs['project'], fs['pool'], response_size(fs['quota']),
+                          response_size(fs['reservation']), response_size(fs['space_total']),
+                          fs['mountpoint']))
 
 
 def main(args):
@@ -127,7 +175,10 @@ def main(args):
               #("{}/hardware/v1/cluster".format(ZFSURL), "cluster")
               ("{}/network/v1/datalinks".format(ZFSURL), "datalinks"),
               ("{}/network/v1/devices".format(ZFSURL), "devices"),
-              ("{}/network/v1/interfaces".format(ZFSURL), "interfaces")]
+              ("{}/network/v1/interfaces".format(ZFSURL), "interfaces"),
+              ("{}/storage/v1/projects".format(ZFSURL), "projects"),
+              ("{}/storage/v1/luns".format(ZFSURL), "luns"),
+              ("{}/storage/v1/filesystems".format(ZFSURL), "filesystems")]
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {}
         for i in group1:
