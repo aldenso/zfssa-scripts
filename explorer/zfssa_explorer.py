@@ -9,8 +9,9 @@
 
 from __future__ import print_function, division
 # import re
+import os
 # import json
-# import csv
+import csv
 from datetime import datetime
 # import ast
 import argparse
@@ -28,6 +29,7 @@ import yaml
 requests.urllib3.disable_warnings(InsecureRequestWarning)
 
 START = datetime.now()
+OUTPUTDIR = "zfssa_explorer_{}".format(datetime.now().strftime("%d%m%y_%H%M%S"))
 ZFSURL = ""  # API URL (https://example:215/api)
 ZAUTH = ()   # API Authentication tuple (username, password)
 HEADER = {"Content-Type": "application/json"}
@@ -77,6 +79,8 @@ def fetch(url, timeout, datatype):
 
 def printdata(data, datatype):
     """Print data in a human readable way"""
+    if not os.path.exists(OUTPUTDIR):
+        os.makedirs(OUTPUTDIR)
     if datatype == "version":
         print("#" * 100)
         print("ZFS Storage Appliance version")
@@ -88,6 +92,7 @@ def printdata(data, datatype):
                                                      data['version']['version'],
                                                      data['version']['csn'],
                                                      data['version']['sp_version']))
+        createCSV(data, datatype)
     elif datatype == "datalinks":
         print("#" * 100)
         print("datalink info")
@@ -103,6 +108,7 @@ def printdata(data, datatype):
                 print("{:15} {:10} {:20} {:8} {:5} {:5}".format(dlink['datalink'], dlink['class'],
                                                                 dlink['label'], "", dlink['id'],
                                                                 dlink['mtu']))
+        createCSV(data, datatype)
     elif datatype == "devices":
         print("#" * 100)
         print("devices info")
@@ -163,6 +169,35 @@ def printdata(data, datatype):
                   .format(fs['name'], fs['project'], fs['pool'], response_size(fs['quota']),
                           response_size(fs['reservation']), response_size(fs['space_total']),
                           fs['mountpoint']))
+
+
+def createCSV(data, datatype):
+    if datatype == "version":
+        d = data['version']
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';')
+            writer.writerow(['href', 'nodename', 'mkt_product', 'product', 'version',
+                             'install_time', 'update_time', 'boot_time', 'asn', 'csn',
+                             'part', 'urn', 'navname', 'navagent', 'http', 'ssl',
+                             'ak_version', 'os_version', 'bios_version', 'sp_version'])
+            writer.writerow([d['href'], d['nodename'], d['mkt_product'], d['product'],
+                             d['version'], d['install_time'], d['update_time'],
+                             d['boot_time'], d['asn'], d['csn'], d['part'], d['urn'],
+                             d['navname'], d['navagent'], d['http'], d['ssl'],
+                             d['ak_version'], d['os_version'], d['bios_version'],
+                             d['sp_version']])
+    if datatype == "datalinks":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';')
+            writer.writerow(['class', 'label', 'mac', 'links', 'mtu', 'id', 'speed', 'duplex',
+                             'datalink', 'href'])
+            for d in data['datalinks']:
+                if d['class'] == "vlan":
+                    writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'],
+                                     d['id'], "-", "-", d['datalink'], d['href']])
+                else:
+                    writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'], "-",
+                                     d['speed'], d['duplex'], d['datalink'], d['href']])
 
 
 def main(args):
