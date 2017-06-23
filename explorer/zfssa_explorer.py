@@ -71,6 +71,12 @@ def response_size(size):
         return "{:.2f}TB".format(size / (1024 * 1024 * 1024 * 1024))
 
 
+def exists(data, key):
+    try:
+        return data[key]
+    except KeyError:
+        return "-"
+
 def fetch(url, timeout, datatype):
     """Fetch data from zfs api"""
     req = requests.get(url, timeout=timeout, auth=ZAUTH, verify=False, headers=HEADER)
@@ -147,6 +153,7 @@ def printdata(data, datatype):
                   .format(proj['name'], proj['mountpoint'], proj['pool'],
                           response_size(proj['quota']), response_size(proj['reservation']),
                           response_size(proj['space_total'])))
+        createCSV(data, datatype)
     elif datatype == "luns":
         print("#" * 100)
         print("luns info")
@@ -177,7 +184,8 @@ def createCSV(data, datatype):
     if datatype == "version":
         d = data['version']
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';')
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
             writer.writerow(['href', 'nodename', 'mkt_product', 'product', 'version',
                              'install_time', 'update_time', 'boot_time', 'asn', 'csn',
                              'part', 'urn', 'navname', 'navagent', 'http', 'ssl',
@@ -190,7 +198,8 @@ def createCSV(data, datatype):
                              d['sp_version']])
     if datatype == "datalinks":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';')
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
             writer.writerow(['class', 'label', 'mac', 'links', 'mtu', 'id', 'speed', 'duplex',
                              'datalink', 'href'])
             for d in data['datalinks']:
@@ -202,7 +211,8 @@ def createCSV(data, datatype):
                                      d['speed'], d['duplex'], d['datalink'], d['href']])
     if datatype == "devices":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';')
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
             writer.writerow(['speed', 'up', 'active', 'media', 'factory_mac', 'port', 'guid',
                              'duplex', 'device', 'href'])
             for d in data['devices']:
@@ -214,7 +224,8 @@ def createCSV(data, datatype):
                                      "-", "-", d['duplex'], d['device'], d['href']])
     if datatype == "interfaces":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
-            writer = csv.writer(csvfile, delimiter=';')
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
             writer.writerow(['state', 'curaddrs', 'class', 'label', 'enable', 'admin', 'links',
                              'v4addrs', 'v4dhcp', 'v4directnets', 'v6addrs', 'v6dhcp',
                              'v6directnets', 'key', 'standbys', 'interface', 'href'])
@@ -230,6 +241,60 @@ def createCSV(data, datatype):
                                      d['enable'], d['admin'], d['links'], d['v4addrs'],
                                      d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
                                      d['v6directnets'], "-", "-", d['interface'], d['href']])
+    if datatype == "projects":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(['snapdir', 'default_volblocksize', 'defaultgroupquota', 'logbias',
+                             'creation', 'nodestroy', 'dedup', 'sharenfs', 'href', 'sharesmb',
+                             'default_permissions', 'mountpoint', 'snaplabel', 'id', 'readonly',
+                             'space_data', 'compression', 'defaultuserquota', 'src_snapdir',
+                             'src_logbias', 'src_dedup', 'src_sharenfs', 'src_sharesmb',
+                             'src_mountpoint', 'src_rrsrc_actions', 'src_compression',
+                             'src_sharetftp', 'src_encryption', 'src_sharedav', 'src_copies',
+                             'src_aclinherit', 'src_shareftp', 'src_readonly', 'src_keychangedate',
+                             'src_secondarycache', 'src_maxblocksize', 'src_exported', 'src_vscan',
+                             'src_reservation', 'src_atime', 'src_recordsize', 'src_checksum',
+                             'src_sharesftp', 'src_nbmand', 'src_aclmode', 'src_rstchown',
+                             'default_sparse', 'encryption', 'aclmode', 'copies', 'aclinherit',
+                             'compressratio', 'shareftp', 'canonical_name', 'recordsize',
+                             'keychangedate', 'space_available', 'secondarycache', 'name',
+                             'space_snapshots', 'space_unused_res', 'quota', 'maxblocksize',
+                             'exported', 'default_volsize', 'vscan', 'reservation', 'keystatus',
+                             'atime', 'pool', 'default_user', 'space_unused_res_shares',
+                             'sharetftp', 'checksum', 'space_total', 'default_group', 'sharesftp',
+                             'rstchown', 'sharedav', 'nbmand'])
+            for d in data['projects']:
+                s = d['source']
+                src_encryption = exists(s, 'encryption')
+                writer.writerow([d['snapdir'], response_size(d['default_volblocksize']),
+                                 d['defaultgroupquota'], d['logbias'], d['creation'],
+                                 d['nodestroy'], d['dedup'], d['sharenfs'], d['href'],
+                                 d['sharesmb'], d['default_permissions'], d['mountpoint'],
+                                 d['snaplabel'], d['id'], d['readonly'],
+                                 response_size(d['space_data']), d['compression'],
+                                 d['defaultuserquota'], s['snapdir'], s['logbias'], s['dedup'],
+                                 s['sharenfs'], s['sharesmb'], s['mountpoint'], s['rrsrc_actions'],
+                                 s['compression'], s['sharetftp'], src_encryption,
+                                 s['sharedav'], s['copies'], s['aclinherit'], s['shareftp'],
+                                 s['readonly'], s['keychangedate'], s['secondarycache'],
+                                 s['maxblocksize'], s['exported'], s['vscan'], s['reservation'],
+                                 s['atime'], s['recordsize'], s['checksum'], s['sharesftp'],
+                                 s['nbmand'], s['aclmode'], s['rstchown'], d['default_sparse'],
+                                 d['encryption'], d['aclmode'], d['copies'], d['aclinherit'],
+                                 d['compressratio'], d['shareftp'], d['canonical_name'],
+                                 response_size(d['recordsize']), d['keychangedate'],
+                                 response_size(d['space_available']), d['secondarycache'],
+                                 d['name'], response_size(d['space_snapshots']),
+                                 response_size(d['space_unused_res']), response_size(d['quota']),
+                                 response_size(d['maxblocksize']), d['exported'],
+                                 response_size(d['default_volsize']), d['vscan'],
+                                 response_size(d['reservation']), d['keystatus'], d['atime'],
+                                 d['pool'], d['default_user'],
+                                 response_size(d['space_unused_res_shares']), d['sharetftp'],
+                                 d['checksum'], response_size(d['space_total']),
+                                 d['default_group'], d['sharesftp'], d['rstchown'], d['sharedav'],
+                                 d['nbmand']])
 
 
 def main(args):
