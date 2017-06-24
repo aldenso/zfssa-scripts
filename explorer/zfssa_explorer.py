@@ -142,6 +142,22 @@ def printdata(data, datatype):
                                                                   iface['v4addrs'],
                                                                   iface['enable']))
         createCSV(data, datatype)
+    elif datatype == "pools":
+        print("#" * 100)
+        print("pools info")
+        print("#" * 100)
+        print("{:10} {:10} {:37} {:12} {:8} {:8} {:8} {:8} {:8}".format("name", "status", "profile",
+                                                                        "owner", "total",
+                                                                        "u_total", "used",
+                                                                        "free", "avail"))
+        for d in data['pools']:
+            u = d['usage']
+            print("{:10} {:10} {:37} {:12} {:8} {:8} {:8} {:8} {:8}"\
+                  .format(d['name'], d['status'], d['profile'], d['owner'],
+                          response_size(u['total']), response_size(u['usage_total']),
+                          response_size(u['used']), response_size(u['free']),
+                          response_size(u['available'])))
+        createCSV(data, datatype)
     elif datatype == "projects":
         print("#" * 100)
         print("projects info")
@@ -231,6 +247,22 @@ def createCSV(data, datatype):
                                  d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
                                  d['v6directnets'], exists(d, 'key'), exists(d, 'standbys'),
                                  d['interface'], d['href']])
+    if datatype == "pools":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(['status', 'profile', 'name', 'usage_available',
+                             'usage_usage_snapshots', 'usage_used', 'usage_compression',
+                             'usage_usage_data', 'usage_free', 'usage_dedupratio', 'usage_total',
+                             'usage_usage_total', 'peer', 'owner', 'asn'])
+            for d in data['pools']:
+                u = d['usage']
+                writer.writerow([d['status'], d['profile'], d['name'],
+                                 response_size(u['available']), response_size(u['usage_snapshots']),
+                                 response_size(u['used']), u['compression'],
+                                 response_size(u['usage_data']), response_size(u['free']),
+                                 u['dedupratio'], response_size(u['total']),
+                                 response_size(u['usage_total']), d['peer'], d['owner'], d['asn']])
     if datatype == "projects":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -383,6 +415,7 @@ def main(args):
               ("{}/network/v1/datalinks".format(ZFSURL), "datalinks"),
               ("{}/network/v1/devices".format(ZFSURL), "devices"),
               ("{}/network/v1/interfaces".format(ZFSURL), "interfaces"),
+              ("{}/storage/v1/pools".format(ZFSURL), "pools"),
               ("{}/storage/v1/projects".format(ZFSURL), "projects"),
               ("{}/storage/v1/luns".format(ZFSURL), "luns"),
               ("{}/storage/v1/filesystems".format(ZFSURL), "filesystems")]
