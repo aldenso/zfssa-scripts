@@ -167,6 +167,7 @@ def printdata(data, datatype):
                   .format(lun['name'], lun['project'], lun['pool'], response_size(lun['volsize']),
                           response_size(lun['volblocksize']), lun['initiatorgroup'], lun['status'],
                           lun['lunguid']))
+        createCSV(data, datatype)
     elif datatype == "filesystems":
         print("#" * 100)
         print("filesystems info")
@@ -266,7 +267,6 @@ def createCSV(data, datatype):
                              'rstchown', 'sharedav', 'nbmand'])
             for d in data['projects']:
                 s = d['source']
-                src_encryption = exists(s, 'encryption')
                 writer.writerow([d['snapdir'], response_size(d['default_volblocksize']),
                                  d['defaultgroupquota'], d['logbias'], d['creation'],
                                  d['nodestroy'], d['dedup'], d['sharenfs'], d['href'],
@@ -275,7 +275,7 @@ def createCSV(data, datatype):
                                  response_size(d['space_data']), d['compression'],
                                  d['defaultuserquota'], s['snapdir'], s['logbias'], s['dedup'],
                                  s['sharenfs'], s['sharesmb'], s['mountpoint'], s['rrsrc_actions'],
-                                 s['compression'], s['sharetftp'], src_encryption,
+                                 s['compression'], s['sharetftp'], exists(s, 'encryption'),
                                  s['sharedav'], s['copies'], s['aclinherit'], s['shareftp'],
                                  s['readonly'], s['keychangedate'], s['secondarycache'],
                                  s['maxblocksize'], s['exported'], s['vscan'], s['reservation'],
@@ -295,6 +295,40 @@ def createCSV(data, datatype):
                                  d['checksum'], response_size(d['space_total']),
                                  d['default_group'], d['sharesftp'], d['rstchown'], d['sharedav'],
                                  d['nbmand']])
+    if datatype == "luns":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["logbias", "creation", "nodestroy", "assignednumber", "copies",
+                             "href", "fixednumber", "space_data", "id", "writecache",
+                             "compression", "encryption", "dedup", "snaplabel", "compressratio",
+                             "src_compression", "src_encryption", "src_logbias", "src_dedup",
+                             "src_copies", "src_maxblocksize", "src_exported", "src_checksum",
+                             "src_keychangedate", "src_rrsrc_actions", "src_secondarycache",
+                             "space_total", "lunumber", "keychangedate", "space_available",
+                             "secondary_cache", "status", "space_snapshots", "lunguid",
+                             "maxblocksize", "exported", "initiatorgroup", "volsize", "keystatus",
+                             "pool", "volblocksize", "name", "checksum", "canonical_name",
+                             "project", "sparse", "targetgroup"])
+            for d in data['luns']:
+                s = d['source']
+                writer.writerow([d['logbias'], d['creation'], d['nodestroy'], d['assignednumber'],
+                                 d['copies'], d['href'], d['fixednumber'],
+                                 response_size(d['space_data']), d['id'], d['writecache'],
+                                 d['compression'], d['encryption'], d['dedup'], d['snaplabel'],
+                                 d['compressratio'], s['compression'], exists(s, 'encryption'),
+                                 s['logbias'], s['dedup'], s['copies'], s['maxblocksize'],
+                                 s['exported'], s['checksum'], s['keychangedate'],
+                                 s['rrsrc_actions'], s['secondarycache'],
+                                 response_size(d['space_total']), d['lunumber'],
+                                 d['keychangedate'], response_size(d['space_available']),
+                                 d['secondarycache'], d['status'],
+                                 response_size(d['space_snapshots']), d['lunguid'],
+                                 response_size(d['maxblocksize']), d['exported'],
+                                 d['initiatorgroup'], response_size(d['volsize']), d['keystatus'],
+                                 d['pool'], response_size(d['volblocksize']), d['name'],
+                                 d['checksum'], d['canonical_name'], d['project'], d['sparse'],
+                                 d['targetgroup']])
 
 
 def main(args):
