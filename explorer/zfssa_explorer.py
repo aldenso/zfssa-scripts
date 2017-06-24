@@ -205,12 +205,9 @@ def createCSV(data, datatype):
             writer.writerow(['class', 'label', 'mac', 'links', 'mtu', 'id', 'speed', 'duplex',
                              'datalink', 'href'])
             for d in data['datalinks']:
-                if d['class'] == "vlan":
-                    writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'],
-                                     d['id'], "-", "-", d['datalink'], d['href']])
-                else:
-                    writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'], "-",
-                                     d['speed'], d['duplex'], d['datalink'], d['href']])
+                writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'],
+                                 exists(d, 'id'), exists(d, 'speed'), exists(d, 'duplex'),
+                                 d['datalink'], d['href']])
     if datatype == "devices":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -218,12 +215,9 @@ def createCSV(data, datatype):
             writer.writerow(['speed', 'up', 'active', 'media', 'factory_mac', 'port', 'guid',
                              'duplex', 'device', 'href'])
             for d in data['devices']:
-                if d['media'] == "Infiniband":
-                    writer.writerow([d['speed'], d['up'], d['active'], d['media'], d['factory_mac'],
-                                     d['port'], d['guid'], "-", d['device'], d['href']])
-                else:
-                    writer.writerow([d['speed'], d['up'], d['active'], d['media'], d['factory_mac'],
-                                     "-", "-", d['duplex'], d['device'], d['href']])
+                writer.writerow([d['speed'], d['up'], d['active'], d['media'], d['factory_mac'],
+                                 exists(d, 'port'), exists(d, 'guid'), exists(d, 'duplex'),
+                                 d['device'], d['href']])
     if datatype == "interfaces":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -232,17 +226,11 @@ def createCSV(data, datatype):
                              'v4addrs', 'v4dhcp', 'v4directnets', 'v6addrs', 'v6dhcp',
                              'v6directnets', 'key', 'standbys', 'interface', 'href'])
             for d in data['interfaces']:
-                if d['class'] == "ipmp":
-                    writer.writerow([d['state'], d['curaddrs'], d['class'], d['label'],
-                                     d['enable'], d['admin'], d['links'], d['v4addrs'],
-                                     d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
-                                     d['v6directnets'], d['key'], d['standbys'], d['interface'],
-                                     d['href']])
-                else:
-                    writer.writerow([d['state'], d['curaddrs'], d['class'], d['label'],
-                                     d['enable'], d['admin'], d['links'], d['v4addrs'],
-                                     d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
-                                     d['v6directnets'], "-", "-", d['interface'], d['href']])
+                writer.writerow([d['state'], d['curaddrs'], d['class'], d['label'],
+                                 d['enable'], d['admin'], d['links'], d['v4addrs'],
+                                 d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
+                                 d['v6directnets'], exists(d, 'key'), exists(d, 'standbys'),
+                                 d['interface'], d['href']])
     if datatype == "projects":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
