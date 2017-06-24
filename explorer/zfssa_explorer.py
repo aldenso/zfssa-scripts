@@ -99,6 +99,15 @@ def printdata(data, datatype):
                                                      data['version']['csn'],
                                                      data['version']['sp_version']))
         createCSV(data, datatype)
+    elif datatype == "problems":
+        print("#" * 100)
+        print("problems info")
+        print("#" * 100)
+        for d in data['problems']:
+            print("Type: {}\nSeverity: {}\nDescription: {}\nImpact: {}\nDiagnosed: {}"
+                  .format(d['type'], d['severity'], d['description'], d['impact'], d['diagnosed']))
+            print("=" * 100)
+        createCSV(data, datatype)
     elif datatype == "datalinks":
         print("#" * 100)
         print("datalink info")
@@ -214,7 +223,17 @@ def createCSV(data, datatype):
                              d['navname'], d['navagent'], d['http'], d['ssl'],
                              d['ak_version'], d['os_version'], d['bios_version'],
                              d['sp_version']])
-    if datatype == "datalinks":
+    elif datatype == "problems":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["uuid", "code", "diagnosed", "phoned_home", "severity", "type", "url",
+                             "description", "impact", "response", "action", "href"])
+            for d in data['problems']:
+                writer.writerow([d['uuid'], d['code'], d['diagnosed'], d['phoned_home'],
+                                 d['severity'], d['type'], d['url'], d['description'], d['impact'],
+                                 d['response'], d['action'], d['href']])
+    elif datatype == "datalinks":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -224,7 +243,7 @@ def createCSV(data, datatype):
                 writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'],
                                  exists(d, 'id'), exists(d, 'speed'), exists(d, 'duplex'),
                                  d['datalink'], d['href']])
-    if datatype == "devices":
+    elif datatype == "devices":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -234,7 +253,7 @@ def createCSV(data, datatype):
                 writer.writerow([d['speed'], d['up'], d['active'], d['media'], d['factory_mac'],
                                  exists(d, 'port'), exists(d, 'guid'), exists(d, 'duplex'),
                                  d['device'], d['href']])
-    if datatype == "interfaces":
+    elif datatype == "interfaces":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -247,7 +266,7 @@ def createCSV(data, datatype):
                                  d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
                                  d['v6directnets'], exists(d, 'key'), exists(d, 'standbys'),
                                  d['interface'], d['href']])
-    if datatype == "pools":
+    elif datatype == "pools":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -263,7 +282,7 @@ def createCSV(data, datatype):
                                  response_size(u['usage_data']), response_size(u['free']),
                                  u['dedupratio'], response_size(u['total']),
                                  response_size(u['usage_total']), d['peer'], d['owner'], d['asn']])
-    if datatype == "projects":
+    elif datatype == "projects":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -316,7 +335,7 @@ def createCSV(data, datatype):
                                  d['checksum'], response_size(d['space_total']),
                                  d['default_group'], d['sharesftp'], d['rstchown'], d['sharedav'],
                                  d['nbmand']])
-    if datatype == "luns":
+    elif datatype == "luns":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -350,7 +369,7 @@ def createCSV(data, datatype):
                                  d['pool'], response_size(d['volblocksize']), d['name'],
                                  d['checksum'], d['canonical_name'], d['project'], d['sparse'],
                                  d['targetgroup']])
-    if datatype == "filesystems":
+    elif datatype == "filesystems":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
@@ -412,6 +431,7 @@ def main(args):
     ZAUTH = (config['username'], config['password'])
     group1 = [("{}/system/v1/version".format(ZFSURL), "version"),
               #("{}/hardware/v1/cluster".format(ZFSURL), "cluster")
+              ("{}/problem/v1/problems".format(ZFSURL), "problems"),
               ("{}/network/v1/datalinks".format(ZFSURL), "datalinks"),
               ("{}/network/v1/devices".format(ZFSURL), "devices"),
               ("{}/network/v1/interfaces".format(ZFSURL), "interfaces"),
