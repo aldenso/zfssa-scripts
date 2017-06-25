@@ -112,17 +112,27 @@ def printdata(data, datatype):
         print("#" * 100)
         print("datalink info")
         print("#" * 100)
-        print("{:15} {:10} {:20} {:8} {:5} {:5}".format("datalink", "class", "label", "speed",
-                                                        "id", "mtu"))
+        print("{:15} {:10} {:20} {:8} {:5} {:5} {:5}".format("datalink", "class", "label", "speed",
+                                                             "id", "mtu", "pkey"))
         for dlink in data['datalinks']:
-            if dlink['class'] != "vlan":
-                print("{:15} {:10} {:20} {:8} {:5} {:5}".format(dlink['datalink'], dlink['class'],
-                                                                dlink['label'], dlink['speed'],
-                                                                "", dlink['mtu']))
+            if dlink['class'] == "vlan":
+                print("{:15} {:10} {:20} {:8} {:5} {:5} {:5}".format(dlink['datalink'],
+                                                                     dlink['class'],
+                                                                     dlink['label'], "",
+                                                                     dlink['id'],
+                                                                     dlink['mtu'], ""))
+            elif dlink['class'] == "partition":
+                print("{:15} {:10} {:20} {:8} {:5} {:5} {:5}".format(dlink['datalink'],
+                                                                     dlink['class'],
+                                                                     dlink['label'], "", "", "",
+                                                                     dlink['pkey']))
             else:
-                print("{:15} {:10} {:20} {:8} {:5} {:5}".format(dlink['datalink'], dlink['class'],
-                                                                dlink['label'], "", dlink['id'],
-                                                                dlink['mtu']))
+                print("{:15} {:10} {:20} {:8} {:5} {:5} {:5}".format(dlink['datalink'],
+                                                                     dlink['class'],
+                                                                     dlink['label'], dlink['speed'],
+                                                                     "", dlink['mtu'], ""))
+
+
         createCSV(data, datatype)
     elif datatype == "devices":
         print("#" * 100)
@@ -132,7 +142,7 @@ def printdata(data, datatype):
                                                                "media", "speed", "up"))
         for dev in data['devices']:
             print("{:10} {:5} {:15} {:25} {:10} {:12} {:4}".format(dev['device'], dev['active'],
-                                                                   dev['duplex'],
+                                                                   exists(dev, 'duplex'),
                                                                    dev['factory_mac'],
                                                                    dev['media'], dev['speed'],
                                                                    dev['up']))
@@ -268,6 +278,43 @@ def printdata(data, datatype):
             print("name: {}\ntargets: {}".format(exists(d, 'name'), exists(d, 'targets')))
             print("=" * 100)
         createCSV(data, datatype)
+    elif datatype == "iscsi_initiators":
+        print("#" * 100)
+        print("iscsi initiators info")
+        print("#" * 100)
+        for d in data['initiators']:
+            print("alias: {}\ninitiator: {}\nchapuser: {}\nchapsecret: {}"\
+                  .format(exists(d, 'alias'), exists(d, 'initiator'), exists(d, 'chapuser'),
+                          exists(d, 'chapsecret')))
+            print("=" * 100)
+        createCSV(data, datatype)
+    elif datatype == "iscsi_initiator-groups":
+        print("#" * 100)
+        print("iscsi initiator-groups info")
+        print("#" * 100)
+        for d in data['groups']:
+            print("name: {}\ninitiators: {}".format(exists(d, 'name'), exists(d, 'initiators')))
+            print("=" * 100)
+        createCSV(data, datatype)
+    elif datatype == "iscsi_targets":
+        print("#" * 100)
+        print("iscsi targets info")
+        print("#" * 100)
+        for d in data['targets']:
+            print("alias: {}\niqn: {}\nauth: {}\ntargetchapuser: {}\ntargetchapsecret: {}\n"\
+                  "interfaces: {}".format(exists(d, 'alias'), exists(d, 'iqn'), exists(d, 'auth'),
+                                          exists(d, 'targetchapuser'),
+                                          exists(d, 'targetchapsecret'), exists(d, 'interfaces')))
+            print("=" * 100)
+        createCSV(data, datatype)
+    elif datatype == "iscsi_target-groups":
+        print("#" * 100)
+        print("iscsi target-groups info")
+        print("#" * 100)
+        for d in data['groups']:
+            print("name: {}\ntargets: {}".format(d['name'], d['targets']))
+            print("=" * 100)
+        createCSV(data, datatype)
 
 
 def createCSV(data, datatype):
@@ -300,12 +347,12 @@ def createCSV(data, datatype):
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
-            writer.writerow(['class', 'label', 'mac', 'links', 'mtu', 'id', 'speed', 'duplex',
-                             'datalink', 'href'])
+            writer.writerow(['class', 'label', 'mac', 'links', 'pkey', 'linkmode', 'mtu', 'id',
+                             'speed', 'duplex', 'datalink', 'href'])
             for d in data['datalinks']:
-                writer.writerow([d['class'], d['label'], d['mac'], d['links'], d['mtu'],
-                                 exists(d, 'id'), exists(d, 'speed'), exists(d, 'duplex'),
-                                 d['datalink'], d['href']])
+                writer.writerow([d['class'], d['label'], d['mac'], d['links'], exists(d, 'pkey'),
+                                 exists(d, 'linkmode'), exists(d, 'mtu'), exists(d, 'id'),
+                                 exists(d, 'speed'), exists(d, 'duplex'), d['datalink'], d['href']])
     elif datatype == "devices":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -545,7 +592,38 @@ def createCSV(data, datatype):
             writer.writerow(["name", "targets", "href"])
             for d in data['groups']:
                 writer.writerow([exists(d, 'name'), exists(d, 'targets'), exists(d, 'href')])
-
+    elif datatype == "iscsi_initiators":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["alias", "initiator", "chapuser", "chapsecret", "href"])
+            for d in data['initiators']:
+                writer.writerow([exists(d, 'alias'), exists(d, 'initiator'), exists(d, 'chapuser'),
+                                 exists(d, 'chapsecret'), exists(d, 'href')])
+    elif datatype == "iscsi_initiator-groups":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["name", "initiators", "href"])
+            for d in data['groups']:
+                writer.writerow([exists(d, 'name'), exists(d, 'initiators'), exists(d, 'href')])
+    elif datatype == "iscsi_targets":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["alias", "iqn", "auth", "targetchapuser", "targetchapsecret",
+                             "interfaces", "href"])
+            for d in data['targets']:
+                writer.writerow([exists(d, 'alias'), exists(d, 'iqn'), exists(d, 'auth'),
+                                 exists(d, 'targetchapuser'), exists(d, 'targetchapsecret'),
+                                 exists(d, 'interfaces'), exists(d, 'href')])
+    elif datatype == "iscsi_target-groups":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["name", "targets", "href"])
+            for d in data['groups']:
+                writer.writerow([exists(d, 'name'), exists(d, 'targets'), exists(d, 'href')])
 
 def main(args):
     configfile = args.server
@@ -568,7 +646,11 @@ def main(args):
               ("{}/san/v1/fc/initiators".format(ZFSURL), "fc_initiators"),
               ("{}/san/v1/fc/initiator-groups".format(ZFSURL), "fc_initiator-groups"),
               ("{}/san/v1/fc/targets".format(ZFSURL), "fc_targets"),
-              ("{}/san/v1/fc/target-groups".format(ZFSURL), "fc_target-groups")]
+              ("{}/san/v1/fc/target-groups".format(ZFSURL), "fc_target-groups"),
+              ("{}/san/v1/iscsi/initiators".format(ZFSURL), "iscsi_initiators"),
+              ("{}/san/v1/iscsi/initiator-groups".format(ZFSURL), "iscsi_initiator-groups"),
+              ("{}/san/v1/iscsi/targets".format(ZFSURL), "iscsi_targets"),
+              ("{}/san/v1/iscsi/target-groups".format(ZFSURL), "iscsi_target-groups")]
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {}
         for i in group1:
