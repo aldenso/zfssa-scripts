@@ -180,12 +180,17 @@ def printdata(data, datatype):
                                                                         "u_total", "used",
                                                                         "free", "avail"))
         for d in data['pools']:
-            u = d['usage']
-            print("{:10} {:10} {:37} {:12} {:8} {:8} {:8} {:8} {:8}"\
-                  .format(d['name'], d['status'], d['profile'], d['owner'],
-                          response_size(u['total']), response_size(u['usage_total']),
-                          response_size(u['used']), response_size(u['free']),
-                          response_size(u['available'])))
+            if d['status'] == "exported":
+                print("{:10} {:10} {:37} {:12} {:8} {:8} {:8} {:8} {:8}"\
+                      .format(d['name'], d['status'], "-", d['owner'],
+                              "-", "-", "-", "-", "-"))
+            else:
+                u = d['usage']
+                print("{:10} {:10} {:37} {:12} {:8} {:8} {:8} {:8} {:8}"\
+                    .format(d['name'], d['status'], d['profile'], d['owner'],
+                            response_size(u['total']), response_size(u['usage_total']),
+                            response_size(u['used']), response_size(u['free']),
+                            response_size(u['available'])))
         createCSV(data, datatype)
     elif datatype == "projects":
         print("#" * 100)
@@ -308,15 +313,20 @@ def createCSV(data, datatype):
             writer.writerow(['status', 'profile', 'name', 'usage_available',
                              'usage_usage_snapshots', 'usage_used', 'usage_compression',
                              'usage_usage_data', 'usage_free', 'usage_dedupratio', 'usage_total',
-                             'usage_usage_total', 'peer', 'owner', 'asn'])
+                             'usage_usage_total', 'peer', 'href', 'owner', 'asn'])
             for d in data['pools']:
-                u = d['usage']
-                writer.writerow([d['status'], d['profile'], d['name'],
-                                 response_size(u['available']), response_size(u['usage_snapshots']),
-                                 response_size(u['used']), u['compression'],
-                                 response_size(u['usage_data']), response_size(u['free']),
-                                 u['dedupratio'], response_size(u['total']),
-                                 response_size(u['usage_total']), d['peer'], d['owner'], d['asn']])
+                if d['status'] == "exported":
+                    writer.writerow([d['status'], "-", d['name'], "-", "-", "-", "-", "-", "-",
+                                     "-", "-", "-", d['peer'], d['href'], d['owner'], d['asn']])
+                else:
+                    u = d['usage']
+                    writer.writerow([d['status'], d['profile'], d['name'],
+                                     response_size(u['available']),
+                                     response_size(u['usage_snapshots']), response_size(u['used']),
+                                     u['compression'], response_size(u['usage_data']),
+                                     response_size(u['free']), u['dedupratio'],
+                                     response_size(u['total']), response_size(u['usage_total']),
+                                     d['peer'], exists(d, 'href'), d['owner'], d['asn']])
     elif datatype == "projects":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -349,18 +359,19 @@ def createCSV(data, datatype):
                                  d['snaplabel'], d['id'], d['readonly'],
                                  response_size(d['space_data']), d['compression'],
                                  d['defaultuserquota'], s['snapdir'], s['logbias'], s['dedup'],
-                                 s['sharenfs'], s['sharesmb'], s['mountpoint'], s['rrsrc_actions'],
-                                 s['compression'], s['sharetftp'], exists(s, 'encryption'),
-                                 s['sharedav'], s['copies'], s['aclinherit'], s['shareftp'],
-                                 s['readonly'], s['keychangedate'], s['secondarycache'],
-                                 s['maxblocksize'], s['exported'], s['vscan'], s['reservation'],
-                                 s['atime'], s['recordsize'], s['checksum'], s['sharesftp'],
-                                 s['nbmand'], s['aclmode'], s['rstchown'], d['default_sparse'],
-                                 d['encryption'], d['aclmode'], d['copies'], d['aclinherit'],
-                                 d['compressratio'], d['shareftp'], d['canonical_name'],
-                                 response_size(d['recordsize']), d['keychangedate'],
-                                 response_size(d['space_available']), d['secondarycache'],
-                                 d['name'], response_size(d['space_snapshots']),
+                                 s['sharenfs'], s['sharesmb'], s['mountpoint'],
+                                 exists(s, 'rrsrc_actions'), s['compression'], s['sharetftp'],
+                                 exists(s, 'encryption'), s['sharedav'], s['copies'],
+                                 s['aclinherit'], s['shareftp'], s['readonly'], s['keychangedate'],
+                                 s['secondarycache'], s['maxblocksize'], s['exported'], s['vscan'],
+                                 s['reservation'], s['atime'], s['recordsize'], s['checksum'],
+                                 s['sharesftp'], s['nbmand'], s['aclmode'], s['rstchown'],
+                                 d['default_sparse'], d['encryption'], d['aclmode'], d['copies'],
+                                 d['aclinherit'], d['compressratio'], d['shareftp'],
+                                 d['canonical_name'], response_size(d['recordsize']),
+                                 d['keychangedate'], response_size(d['space_available']),
+                                 d['secondarycache'], d['name'],
+                                 response_size(d['space_snapshots']),
                                  response_size(d['space_unused_res']), response_size(d['quota']),
                                  response_size(d['maxblocksize']), d['exported'],
                                  response_size(d['default_volsize']), d['vscan'],
@@ -383,8 +394,9 @@ def createCSV(data, datatype):
                              "space_total", "lunumber", "keychangedate", "space_available",
                              "secondary_cache", "status", "space_snapshots", "lunguid",
                              "maxblocksize", "exported", "initiatorgroup", "volsize", "keystatus",
-                             "pool", "volblocksize", "name", "checksum", "canonical_name",
-                             "project", "sparse", "targetgroup"])
+                             "pool", "volblocksize", "writelimit", "name", "checksum",
+                             "canonical_name", "project", "sparse", "targetgroup",
+                             "effectivewritelimit"])
             for d in data['luns']:
                 s = d['source']
                 writer.writerow([d['logbias'], d['creation'], d['nodestroy'], d['assignednumber'],
@@ -394,65 +406,69 @@ def createCSV(data, datatype):
                                  d['compressratio'], s['compression'], exists(s, 'encryption'),
                                  s['logbias'], s['dedup'], s['copies'], s['maxblocksize'],
                                  s['exported'], s['checksum'], s['keychangedate'],
-                                 s['rrsrc_actions'], s['secondarycache'],
+                                 exists(s, 'rrsrc_actions'), s['secondarycache'],
                                  response_size(d['space_total']), d['lunumber'],
                                  d['keychangedate'], response_size(d['space_available']),
                                  d['secondarycache'], d['status'],
                                  response_size(d['space_snapshots']), d['lunguid'],
                                  response_size(d['maxblocksize']), d['exported'],
                                  d['initiatorgroup'], response_size(d['volsize']), d['keystatus'],
-                                 d['pool'], response_size(d['volblocksize']), d['name'],
-                                 d['checksum'], d['canonical_name'], d['project'], d['sparse'],
-                                 d['targetgroup']])
+                                 d['pool'], response_size(d['volblocksize']),
+                                 exists(d, 'writelimit'), d['name'], d['checksum'],
+                                 d['canonical_name'], d['project'], d['sparse'],
+                                 d['targetgroup'], exists(d, 'effectivewritelimit')])
     elif datatype == "filesystems":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
             writer.writerow(["sep=;"])
             writer.writerow(["snapdir", "logbias", "creation", "nodestroy", "dedup", "sharenfs",
-                             "sharesmb_abe", "sharesmb", "mountpoint", "casesensitivity",
-                             "snaplabel", "id", "readonly", "sharesmb_name", "space_data",
-                             "compression", "sharetftp", "src_snapdir", "src_logbias", "src_dedup",
-                             "src_sharenfs", "src_sharesmb", "src_mountpoint", "src_rrsrc_actions",
-                             "src_compression", "src_sharetftp", "src_encryption", "src_sharedav",
-                             "src_copies", "src_aclinherit", "src_shareftp", "src_readonly",
-                             "src_keychangedate", "src_secondarycache", "src_maxblocksize",
-                             "src_exported", "src_vscan", "src_reservation", "src_atime",
-                             "src_recordsize", "src_checksum", "src_sharesftp", "src_nbmand",
-                             "src_aclmode", "src_rstchown", "encryption", "aclmode", "copies",
+                             "sharesmb_abe", "sharesmb", "root_acl", "mountpoint",
+                             "casesensitivity", "snaplabel", "id", "readonly", "sharesmb_name",
+                             "space_data", "compression", "sharetftp", "src_snapdir", "src_logbias",
+                             "src_dedup", "src_sharenfs", "src_sharesmb", "src_mountpoint",
+                             "src_rrsrc_actions", "src_compression", "src_sharetftp",
+                             "src_encryption", "src_sharedav", "src_copies", "src_aclinherit",
+                             "src_shareftp", "src_readonly", "src_keychangedate",
+                             "src_secondarycache", "src_maxblocksize", "src_exported", "src_vscan",
+                             "src_reservation", "src_atime", "src_recordsize", "src_checksum",
+                             "src_sharesftp", "src_nbmand", "src_aclmode", "src_rstchown",
+                             "encryption", "aclmode", "copies", "smbshareacl",
                              "aclinherit", "compressratio", "shareftp", "canonical_name",
                              "recordsize", "keychangedate", "space_available", "root_group",
                              "secondarycache", "root_user", "root_permissions", "shadow",
                              "space_snapshots", "href", "space_unused_res", "quota", "utf8only",
                              "sharesmb_dfsroot", "maxblocksize", "exported", "vscan", "reservation",
-                             "keystatus", "atime", "pool", "quota_snap", "name", "checksum",
-                             "space_total", "project", "normalization", "sharesftp", "rstchown",
-                             "reservation_snap", "sharedav", "nbmand"])
+                             "keystatus", "atime", "pool", "quota_snap", "space_unused_res_shares",
+                             "name", "checksum", "space_total", "project", "normalization",
+                             "sharesftp", "rstchown", "reservation_snap", "sharedav", "nbmand"])
             for d in data['filesystems']:
                 s = d['source']
                 writer.writerow([d['snapdir'], d['logbias'], d['creation'], d['nodestroy'],
                                  d['dedup'], d['sharenfs'], exists(d, 'sharesmb_abe'),
-                                 d['sharesmb'], d['mountpoint'], d['casesensitivity'],
-                                 d['snaplabel'], d['id'], d['readonly'], exists(d, 'sharesmb_name'),
-                                 response_size(d['space_data']), d['compression'], d['sharetftp'],
-                                 s['snapdir'], s['logbias'], s['dedup'], s['sharenfs'],
-                                 s['sharesmb'], s['mountpoint'], s['rrsrc_actions'],
-                                 s['compression'], s['sharetftp'], exists(s, 'encryption'),
-                                 s['sharedav'], s['copies'], s['aclinherit'], s['shareftp'],
-                                 s['readonly'], s['keychangedate'], s['secondarycache'],
-                                 s['maxblocksize'], s['exported'], s['vscan'], s['reservation'],
-                                 s['atime'], s['recordsize'], s['checksum'], s['sharesftp'],
-                                 s['nbmand'], s['aclmode'], s['rstchown'], d['encryption'],
-                                 d['aclmode'], d['copies'], d['aclinherit'], d['compressratio'],
-                                 d['shareftp'], d['canonical_name'], response_size(d['recordsize']),
-                                 d['keychangedate'], response_size(d['space_available']),
-                                 d['root_group'], d['secondarycache'], d['root_user'],
-                                 d['root_permissions'], d['shadow'],
-                                 response_size(d['space_snapshots']), d['href'],
+                                 d['sharesmb'], exists(d, 'root_acl'), d['mountpoint'],
+                                 d['casesensitivity'], d['snaplabel'], d['id'], d['readonly'],
+                                 exists(d, 'sharesmb_name'), response_size(d['space_data']),
+                                 d['compression'], d['sharetftp'], s['snapdir'], s['logbias'],
+                                 s['dedup'], s['sharenfs'], s['sharesmb'], s['mountpoint'],
+                                 exists(s, 'rrsrc_actions'), s['compression'], s['sharetftp'],
+                                 exists(s, 'encryption'), s['sharedav'], s['copies'],
+                                 s['aclinherit'], s['shareftp'], s['readonly'],
+                                 s['keychangedate'], s['secondarycache'], s['maxblocksize'],
+                                 s['exported'], s['vscan'], s['reservation'], s['atime'],
+                                 s['recordsize'], s['checksum'], s['sharesftp'], s['nbmand'],
+                                 s['aclmode'], s['rstchown'], d['encryption'], d['aclmode'],
+                                 d['copies'], exists(d, 'smbshareacl'), d['aclinherit'],
+                                 d['compressratio'], d['shareftp'], d['canonical_name'],
+                                 response_size(d['recordsize']), d['keychangedate'],
+                                 response_size(d['space_available']), d['root_group'],
+                                 d['secondarycache'], d['root_user'], d['root_permissions'],
+                                 d['shadow'], response_size(d['space_snapshots']), d['href'],
                                  response_size(d['space_unused_res']), response_size(d['quota']),
                                  d['utf8only'], exists(d, 'sharesmb_dfsroot'),
                                  response_size(d['maxblocksize']), d['exported'], d['vscan'],
                                  response_size(d['reservation']), d['keystatus'], d['atime'],
-                                 d['pool'], response_size(d['quota_snap']), d['name'],
+                                 d['pool'], response_size(d['quota_snap']),
+                                 exists(d, 'space_unused_res_shares'), d['name'],
                                  d['checksum'], response_size(d['space_total']), d['project'],
                                  d['normalization'], d['sharesftp'], d['rstchown'],
                                  response_size(d['reservation_snap']), d['sharedav'], d['nbmand']])
