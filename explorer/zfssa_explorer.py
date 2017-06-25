@@ -99,6 +99,24 @@ def printdata(data, datatype):
                                                      data['version']['csn'],
                                                      data['version']['sp_version']))
         createCSV(data, datatype)
+    elif datatype == "cluster":
+        print("#" * 100)
+        print("cluster info")
+        print("#" * 100)
+        print("{:15} {:10} {:15} {:15} {:10}".format("state", "description", "peer_hostname",
+                                                     "peer_state", "peer_description"))
+        print("{:15} {:10} {:15} {:15} {:10}".format(data['cluster']['state'],
+                                                     data['cluster']['description'],
+                                                     data['cluster']['peer_hostname'],
+                                                     data['cluster']['peer_state'],
+                                                     data['cluster']['peer_description']))
+        print("=" * 100)
+        print("resources")
+        print("{:15} {:10} {:20} {:18}".format("owner", "type", "user_label", "details"))
+        for r in data['cluster']['resources']:
+            print("{:15} {:10} {:20} {:18}".format(r['owner'], r['type'], r['user_label'],
+                                                   r['details']))
+        createCSV(data, datatype)
     elif datatype == "problems":
         print("#" * 100)
         print("problems info")
@@ -333,6 +351,18 @@ def createCSV(data, datatype):
                              d['navname'], d['navagent'], d['http'], d['ssl'],
                              d['ak_version'], d['os_version'], d['bios_version'],
                              d['sp_version']])
+    elif datatype == "cluster":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["state", "description", "peer_asn", "peer_hostname", "peer_state",
+                             "peer_description"])
+            writer.writerow([data['cluster']['state'], data['cluster']['description'],
+                             data['cluster']['peer_asn'], data['cluster']['peer_hostname'],
+                             data['cluster']['peer_state'], data['cluster']['peer_description']])
+            writer.writerow(["owner", "type", "user_label", "details", "href"])
+            for r in data['cluster']['resources']:
+                writer.writerow([r['owner'], r['type'], r['user_label'], r['details'], r['href']])
     elif datatype == "problems":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -632,7 +662,7 @@ def main(args):
     ZFSURL = "https://{}:215/api".format(config['ip'])
     ZAUTH = (config['username'], config['password'])
     group1 = [("{}/system/v1/version".format(ZFSURL), "version"),
-              #("{}/hardware/v1/cluster".format(ZFSURL), "cluster")
+              ("{}/hardware/v1/cluster".format(ZFSURL), "cluster"),
               ("{}/problem/v1/problems".format(ZFSURL), "problems"),
               ("{}/network/v1/datalinks".format(ZFSURL), "datalinks"),
               ("{}/network/v1/devices".format(ZFSURL), "devices"),
