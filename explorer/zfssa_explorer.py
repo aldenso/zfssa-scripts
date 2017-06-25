@@ -151,6 +151,26 @@ def printdata(data, datatype):
                                                                   iface['v4addrs'],
                                                                   iface['enable']))
         createCSV(data, datatype)
+    elif datatype == "routes":
+        print("#" * 100)
+        print("routes info")
+        print("#" * 100)
+        print("{:17} {:17} {:10} {:10} {:8} {:10}".format("gateway", "destination", "interface",
+                                                          "type", "family", "status"))
+        print("=" * 100)
+        for d in data['routes']:
+            print("{:17} {:17} {:10} {:10} {:8} {:10}".format(d['gateway'], d['destination'],
+                                                              d['interface'], d['type'],
+                                                              d['family'], d['status']))
+            print("=" * 100)
+        createCSV(data, datatype)
+    elif datatype == "routing":
+        print("#" * 100)
+        print("routing info")
+        print("#" * 100)
+        print("{:15}".format("multihoming"))
+        print("{:15}".format(data['routing']['multihoming']))
+        createCSV(data, datatype)
     elif datatype == "pools":
         print("#" * 100)
         print("pools info")
@@ -266,6 +286,21 @@ def createCSV(data, datatype):
                                  d['v4dhcp'], d['v4directnets'], d['v6addrs'], d['v6dhcp'],
                                  d['v6directnets'], exists(d, 'key'), exists(d, 'standbys'),
                                  d['interface'], d['href']])
+    elif datatype == "routes":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["status", "family", "destination", "mask", "href", "interface", "type",
+                             "gateway"])
+            for d in data['routes']:
+                writer.writerow([d['status'], d['family'], d['destination'], d['mask'], d['href'],
+                                 d['interface'], d['type'], d['gateway']])
+    elif datatype == "routing":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["href", "multihoming"])
+            writer.writerow([data['routing']['href'], data['routing']['multihoming']])
     elif datatype == "pools":
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
@@ -435,6 +470,8 @@ def main(args):
               ("{}/network/v1/datalinks".format(ZFSURL), "datalinks"),
               ("{}/network/v1/devices".format(ZFSURL), "devices"),
               ("{}/network/v1/interfaces".format(ZFSURL), "interfaces"),
+              ("{}/network/v1/routes".format(ZFSURL), "routes"),
+              ("{}/network/v1/routing".format(ZFSURL), "routing"),
               ("{}/storage/v1/pools".format(ZFSURL), "pools"),
               ("{}/storage/v1/projects".format(ZFSURL), "projects"),
               ("{}/storage/v1/luns".format(ZFSURL), "luns"),
