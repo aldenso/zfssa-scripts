@@ -230,6 +230,44 @@ def printdata(data, datatype):
                           response_size(fs['reservation']), response_size(fs['space_total']),
                           fs['mountpoint']))
         createCSV(data, datatype)
+    elif datatype == "fc_initiators":
+        print("#" * 100)
+        print("fc initiators info")
+        print("#" * 100)
+        print("{:20} {:30}".format("alias", "initiator"))
+        for d in data['initiators']:
+            print("{:20} {:30}".format(d['alias'], d['initiator']))
+        createCSV(data, datatype)
+    elif datatype == "fc_initiator-groups":
+        print("#" * 100)
+        print("fc initiator-groups info")
+        print("#" * 100)
+        for d in data['groups']:
+            print("name: {}\ninitiators: {}".format(d['name'], d['initiators']))
+            print("=" * 100)
+        createCSV(data, datatype)
+    elif datatype == "fc_targets":
+        print("#" * 100)
+        print("fc targets info")
+        print("#" * 100)
+        for d in data['targets']:
+            print("wwn: {}\nspeed: {}\nport: {}\ndiscoveredports: {}\nlink_failure_count: {}\t"\
+                  "loss_of_sync_count: {}\tloss_of_signal_count: {}\nprotocol_error_count: {}\t"\
+                  "invalid_tx_word_count: {}\tinvalid_crc_count: {}"\
+                  .format(d['wwn'], d['speed'], d['port'], d['discovered_ports'],
+                          d['link_failure_count'], d['loss_of_sync_count'],
+                          d['loss_of_signal_count'], d['protocol_error_count'],
+                          d['invalid_tx_word_count'], d['invalid_crc_count']))
+            print("=" * 100)
+        createCSV(data, datatype)
+    elif datatype == "fc_target-groups":
+        print("#" * 100)
+        print("fc target-groups info")
+        print("#" * 100)
+        for d in data['groups']:
+            print("name: {}\ntargets: {}".format(exists(d, 'name'), exists(d, 'targets')))
+            print("=" * 100)
+        createCSV(data, datatype)
 
 
 def createCSV(data, datatype):
@@ -472,6 +510,41 @@ def createCSV(data, datatype):
                                  d['checksum'], response_size(d['space_total']), d['project'],
                                  d['normalization'], d['sharesftp'], d['rstchown'],
                                  response_size(d['reservation_snap']), d['sharedav'], d['nbmand']])
+    elif datatype == "fc_initiators":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["alias", "initiator", "href"])
+            for d in data['initiators']:
+                writer.writerow([d['alias'], d['initiator'], d['href']])
+    elif datatype == "fc_initiator-groups":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["name", "initiators", "href"])
+            for d in data['groups']:
+                writer.writerow([d['name'], d['initiators'], d['href']])
+    elif datatype == "fc_targets":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["wwn", "port", "mode", "speed", "discovered_ports",
+                             "link_failure_count", "loss_of_sync_count", "loss_of_signal_count",
+                             "protocol_error_count", "invalid_tx_word_count", "invalid_crc_count",
+                             "href"])
+            for d in data['targets']:
+                writer.writerow([d['wwn'], d['port'], d['mode'], d['speed'],
+                                 d['discovered_ports'], d['link_failure_count'],
+                                 d['loss_of_sync_count'], d['loss_of_signal_count'],
+                                 d['protocol_error_count'], d['invalid_tx_word_count'],
+                                 d['invalid_crc_count'], d['href']])
+    elif datatype == "fc_target-groups":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["name", "targets", "href"])
+            for d in data['groups']:
+                writer.writerow([exists(d, 'name'), exists(d, 'targets'), exists(d, 'href')])
 
 
 def main(args):
@@ -491,7 +564,11 @@ def main(args):
               ("{}/storage/v1/pools".format(ZFSURL), "pools"),
               ("{}/storage/v1/projects".format(ZFSURL), "projects"),
               ("{}/storage/v1/luns".format(ZFSURL), "luns"),
-              ("{}/storage/v1/filesystems".format(ZFSURL), "filesystems")]
+              ("{}/storage/v1/filesystems".format(ZFSURL), "filesystems"),
+              ("{}/san/v1/fc/initiators".format(ZFSURL), "fc_initiators"),
+              ("{}/san/v1/fc/initiator-groups".format(ZFSURL), "fc_initiator-groups"),
+              ("{}/san/v1/fc/targets".format(ZFSURL), "fc_targets"),
+              ("{}/san/v1/fc/target-groups".format(ZFSURL), "fc_target-groups")]
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {}
         for i in group1:
