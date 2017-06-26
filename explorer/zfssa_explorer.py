@@ -21,6 +21,7 @@ import requests
 #from requests.exceptions import HTTPError, ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 import yaml
+from zipfile import ZipFile
 
 # to disable warning
 # InsecureRequestWarning: Unverified HTTPS request is being made.
@@ -29,7 +30,7 @@ import yaml
 requests.urllib3.disable_warnings(InsecureRequestWarning)
 
 START = datetime.now()
-OUTPUTDIR = "zfssa_explorer_{}".format(datetime.now().strftime("%d%m%y_%H%M%S"))
+OUTPUTDIR = ""
 ZFSURL = ""  # API URL (https://example:215/api)
 ZAUTH = ()   # API Authentication tuple (username, password)
 HEADER = {"Content-Type": "application/json"}
@@ -658,9 +659,11 @@ def createCSV(data, datatype):
 def main(args):
     configfile = args.server
     config = read_yaml_file(configfile)
-    global ZFSURL, ZAUTH
+    global ZFSURL, ZAUTH, OUTPUTDIR
     ZFSURL = "https://{}:215/api".format(config['ip'])
     ZAUTH = (config['username'], config['password'])
+    OUTPUTDIR = "zfssa_explorer_{}_{}".format(config['ip'],
+                                              datetime.now().strftime("%d%m%y_%H%M%S"))
     group1 = [("{}/system/v1/version".format(ZFSURL), "version"),
               ("{}/hardware/v1/cluster".format(ZFSURL), "cluster"),
               ("{}/problem/v1/problems".format(ZFSURL), "problems"),
@@ -696,6 +699,12 @@ def main(args):
                 print(exc)
             else:
                 printdata(data, datatype)
+        with ZipFile('{}.zip'.format(OUTPUTDIR), 'w') as outzip:
+            for root, _, files in os.walk(OUTPUTDIR):
+                for file in files:
+                    outzip.write(os.path.join(root, file))
+                    os.remove(os.path.join(root, file))
+        os.rmdir(OUTPUTDIR)
         delta = datetime.now() - START
         print("Finished in {} seconds".format(delta.seconds))
 
