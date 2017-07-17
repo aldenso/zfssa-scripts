@@ -334,6 +334,14 @@ def printdata(data, datatype):
             print("name: {}\ntargets: {}".format(d['name'], d['targets']))
             print("=" * 100)
         createCSV(data, datatype)
+    elif datatype == "users":
+        print("#" * 100)
+        print("users info")
+        print("#" * 100)
+        print("{:12} {:10} {:13} {:20}".format("logname", "type", "uid", "roles"))
+        for d in data['users']:
+            print("{:12} {:10} {:13} {:20}".format(d['logname'], d['type'], d['uid'], exists(d, 'roles')))
+        createCSV(data, datatype)
 
 
 def createCSV(data, datatype):
@@ -681,6 +689,17 @@ def createCSV(data, datatype):
             writer.writerow(["name", "targets", "href"])
             for d in data['groups']:
                 writer.writerow([exists(d, 'name'), exists(d, 'targets'), exists(d, 'href')])
+    elif datatype == "users":
+        with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'wb') as csvfile:
+            writer = csv.writer(csvfile, delimiter=';', quoting=csv.QUOTE_MINIMAL)
+            writer.writerow(["sep=;"])
+            writer.writerow(["logname", "type", "uid", "fullname", "initial_password",
+                             "require_annotation", "roles", "kiosk_mode", "kiosk_screen", "href"])
+            for d in data['users']:
+                writer.writerow([d['logname'], d['type'], d['uid'], d['fullname'],
+                                 d['initial_password'], d['require_annotation'], exists(d, 'roles'),
+                                 exists(d, 'kiosk_mode'), exists(d, 'kiosk_screen'), d['href']])
+
 
 def main(args):
     configfile = args.server
@@ -709,7 +728,8 @@ def main(args):
               ("{}/san/v1/iscsi/initiators".format(ZFSURL), "iscsi_initiators"),
               ("{}/san/v1/iscsi/initiator-groups".format(ZFSURL), "iscsi_initiator-groups"),
               ("{}/san/v1/iscsi/targets".format(ZFSURL), "iscsi_targets"),
-              ("{}/san/v1/iscsi/target-groups".format(ZFSURL), "iscsi_target-groups")]
+              ("{}/san/v1/iscsi/target-groups".format(ZFSURL), "iscsi_target-groups"),
+              ("{}/user/v1/users".format(ZFSURL), "users")]
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {}
         for i in group1:
