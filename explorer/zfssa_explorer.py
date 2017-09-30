@@ -3,20 +3,14 @@
 # @CreateTime: Jun 20, 2017 3:51 PM
 # @Author: Aldo Sotolongo
 # @Contact: aldenso@gmail.com
-# @Last Modified By: Aldo Sotolongo
-# @Last Modified Time: Jun 20, 2017 7:01 PM
-# @Description: Modify Here, Please
+# @Description: Collect ZFS Storage Appliance info.
 
 from __future__ import print_function, division
-# import re
 import os
-# import json
 import csv
 from datetime import datetime
 from zipfile import ZipFile
-# import ast
 import argparse
-# import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 #from requests.exceptions import HTTPError, ConnectionError
@@ -34,7 +28,6 @@ OUTPUTDIR = ""
 ZFSURL = ""  # API URL (https://example:215/api)
 ZAUTH = ()   # API Authentication tuple (username, password)
 HEADER = {"Content-Type": "application/json"}
-LOGFILE = "explorer_output.log"
 
 
 def create_parser():
@@ -43,9 +36,9 @@ def create_parser():
         description="Script to get ZFS Storage Appliance info")
     parser.add_argument(
         "-s", "--server", type=str, help="Server config file (YAML)", required=True)
-    # parser.add_argument(
-    #     "-p", "--progress", action="store_true", help="progress bar and logging to file",
-    #     required=False)
+    parser.add_argument(
+        "-p", "--progress", action="store_true", help="progress bar",
+        required=False)
     return parser
 
 
@@ -85,10 +78,17 @@ def fetch(url, timeout, datatype):
     data = req.json()
     return data, datatype
 
+def createprogress(count):
+    """Return progress Bar"""
+    widgets = [Percentage(),
+               ' ', Bar(),
+               ' ', AdaptiveETA()]
+    pbar = ProgressBar(widgets=widgets, maxval=count)
+    pbar.start()
+    return pbar
+
 def printdata(data, datatype):
     """Print data in a human readable way"""
-    if not os.path.exists(OUTPUTDIR):
-        os.makedirs(OUTPUTDIR)
     if datatype == "version":
         print("#" * 100)
         print("ZFS Storage Appliance version")
@@ -348,6 +348,8 @@ def printdata(data, datatype):
 
 
 def createCSV(data, datatype):
+    if not os.path.exists(OUTPUTDIR):
+        os.makedirs(OUTPUTDIR)
     if datatype == "version":
         d = data['version']
         with open(os.path.join(OUTPUTDIR, '{}.csv'.format(datatype)), 'w') as csvfile:
@@ -733,6 +735,10 @@ def main(args):
               ("{}/san/v1/iscsi/targets".format(ZFSURL), "iscsi_targets"),
               ("{}/san/v1/iscsi/target-groups".format(ZFSURL), "iscsi_target-groups"),
               ("{}/user/v1/users".format(ZFSURL), "users")]
+    progbar = None
+    initial = 0
+    if args.progress:
+        progbar = createprogress(len(group1))
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {}
         for i in group1:
@@ -747,7 +753,12 @@ def main(args):
             except Exception as exc:
                 print(exc)
             else:
-                printdata(data, datatype)
+                if progbar:
+                    createCSV(data, datatype)
+                    initial += 1
+                    progbar.update(initial)
+                else:
+                    printdata(data, datatype)
         with ZipFile('{}.zip'.format(OUTPUTDIR), 'w') as outzip:
             for root, _, files in os.walk(OUTPUTDIR):
                 for file in files:
@@ -755,16 +766,18 @@ def main(args):
                     os.remove(os.path.join(root, file))
         os.rmdir(OUTPUTDIR)
         delta = datetime.now() - START
+        if progbar:
+            progbar.finish()
         print("Finished in {} seconds".format(delta.seconds))
 
 
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    # if args.progress:
-    #     try:
-    #         from progress.bar import Bar
-    #     except ImportError as err:
-    #         print("You need to install progress: pip install progress - Error: {}".format(err))
-    #         exit(1)
+    if args.progress:
+        try:
+            from progressbar import ProgressBar, AdaptiveETA, Bar, Percentage
+        except ImportError as err:
+            print("You need to install progress: pip install progressbar33 - Error: {}".format(err))
+            exit(1)
     main(args)

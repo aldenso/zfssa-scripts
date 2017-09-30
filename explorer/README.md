@@ -17,7 +17,7 @@ Usage:
 
 ```text
 $ ./zfssa_explorer.py -h
-usage: zfssa_explorer.py [-h] -s SERVER
+usage: zfssa_explorer.py [-h] -s SERVER [-p]
 
 Script to get ZFS Storage Appliance info
 
@@ -25,6 +25,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -s SERVER, --server SERVER
                         Server config file (YAML)
+  -p, --progress        progress bar
 ```
 
 Run explorer.
