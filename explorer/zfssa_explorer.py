@@ -53,17 +53,14 @@ def read_yaml_file(configfile):
         return config
 
 
-def response_size(size):
-    if len(str(int(size))) <= 3:
-        return "{:.2f}".format(size)
-    elif len(str(int(size))) <= 6:
-        return "{:.2f}KB".format(size / 1024)
-    elif len(str(int(size))) <= 9:
-        return "{:.2f}MB".format(size / (1024 * 1024))
-    elif len(str(int(size))) <= 12:
-        return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
-    elif len(str(int(size))) > 12:
-        return "{:.2f}TB".format(size / (1024 * 1024 * 1024 * 1024))
+suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+def response_size(nbytes):
+    i = 0
+    while nbytes >= 1024 and i < len(suffixes)-1:
+        nbytes /= 1024.
+        i += 1
+    f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
+    return '%s %s' % (f, suffixes[i])
 
 
 def exists(data, key):
@@ -450,7 +447,7 @@ def createCSV(data, datatype):
                 if d['status'] == "exported":
                     writer.writerow([d['status'], "-", d['name'], "-", "-", "-", "-", "-", "-",
                                      "-", "-", "-", "-", "-", "-", "-", "-", "-", "-", d['peer'],
-                                     d['href'], d['owner'], d['asn']])
+                                     exists(d, 'href'), d['owner'], d['asn']])
                 else:
                     u = d['usage']
                     writer.writerow([d['status'], d['profile'], d['name'], u['available'],

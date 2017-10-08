@@ -57,7 +57,7 @@ def create_parser():
 def read_project_file(filename):
     """Read projects csv file and return the list."""
     projectlist = []
-    with open(filename, 'rb') as cvsfile:
+    with open(filename, 'r') as cvsfile:
         filereader = csv.reader(cvsfile, delimiter=',')
         for row in filereader:
             projectlist.append(row)
@@ -68,24 +68,22 @@ def read_project_file(filename):
 def read_yaml_file(configfile):
     """Read config file and return credentials in json."""
     config = {}
-    try:
-        config = yaml.load(file(configfile, 'r'))
-    except yaml.YAMLError as error:
-        print("Error in configuration file: {}").format(error)
-    return config
+    with open(configfile, 'r') as configuration:
+        try:
+            config = yaml.load(configuration)
+        except yaml.YAMLError as error:
+            print("Error in configuration file: {}").format(error)
+        return config
 
 
-def response_size(size):
-    if len(str(int(size))) <= 3:
-        return "{:.2f}".format(size)
-    elif len(str(int(size))) <= 6:
-        return "{:.2f}KB".format(size / 1024)
-    elif len(str(int(size))) <= 9:
-        return "{:.2f}MB".format(size / (1024 * 1024))
-    elif len(str(int(size))) <= 12:
-        return "{:.2f}GB".format(size / (1024 * 1024 * 1024))
-    elif len(str(int(size))) > 12:
-        return "{:.2f}TB".format(size / (1024 * 1024 * 1024 * 1024))
+suffixes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+def response_size(nbytes):
+    i = 0
+    while nbytes >= 1024 and i < len(suffixes)-1:
+        nbytes /= 1024.
+        i += 1
+    f = ('%.2f' % nbytes).rstrip('0').rstrip('.')
+    return '%s %s' % (f, suffixes[i])
 
 
 def create_project(fileline):
