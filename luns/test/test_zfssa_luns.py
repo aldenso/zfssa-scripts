@@ -16,11 +16,11 @@ class TestCommon(unittest.TestCase):
 
     def test_response_size(self):
         """Test response_size function to print human readable sizes"""
-        self.assertEqual(response_size(10240), '10.00KB')
-        self.assertEqual(response_size(9437184), '9.00MB')
-        self.assertEqual(response_size(103809024), '99.00MB')
-        self.assertEqual(response_size(137438953472), '128.00GB')
-        self.assertEqual(response_size(140737488355), '131.07GB')
+        self.assertEqual(response_size(10240), '10 KB')
+        self.assertEqual(response_size(9437184), '9 MB')
+        self.assertEqual(response_size(103809024), '99 MB')
+        self.assertEqual(response_size(137438953472), '128 GB')
+        self.assertEqual(response_size(140737488355), '131.07 GB')
 
     def test_get_real_size(self):
         """Test get_real_size function to convert input sizes (integer and string) to integer"""
