@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @CreateTime: Jun 20, 2017 3:51 PM
 # @Author: Aldo Sotolongo
@@ -16,6 +16,7 @@ import requests
 #from requests.exceptions import HTTPError, ConnectionError
 from urllib3.exceptions import InsecureRequestWarning
 import yaml
+from progressbar import ProgressBar, AdaptiveETA, Bar, Percentage
 
 # to disable warning
 # InsecureRequestWarning: Unverified HTTPS request is being made.
@@ -23,7 +24,7 @@ import yaml
 # https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
 requests.urllib3.disable_warnings(InsecureRequestWarning)
 
-START = datetime.now()
+
 OUTPUTDIR = ""
 ZFSURL = ""  # API URL (https://example:215/api)
 ZAUTH = ()   # API Authentication tuple (username, password)
@@ -761,20 +762,15 @@ def main(args):
                 for file in files:
                     outzip.write(os.path.join(root, file))
                     os.remove(os.path.join(root, file))
-        os.rmdir(OUTPUTDIR)
-        delta = datetime.now() - START
+        try:
+            os.rmdir(OUTPUTDIR)
+        except FileNotFoundError as err:
+            print("Nothing to remove")
         if progbar:
             progbar.finish()
-        print("Finished in {} seconds".format(delta.seconds))
 
 
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
-    if args.progress:
-        try:
-            from progressbar import ProgressBar, AdaptiveETA, Bar, Percentage
-        except ImportError as err:
-            print("You need to install progress: pip install progressbar33 - Error: {}".format(err))
-            exit(1)
     main(args)
