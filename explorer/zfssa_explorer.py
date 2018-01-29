@@ -710,8 +710,9 @@ def main(args):
     global ZFSURL, ZAUTH, OUTPUTDIR
     ZFSURL = "https://{}:215/api".format(config['ip'])
     ZAUTH = (config['username'], config['password'])
-    OUTPUTDIR = "zfssa_explorer_{}_{}".format(config['ip'],
-                                              datetime.now().strftime("%d%m%y_%H%M%S"))
+    OUTPUTDIR = os.path.join("data", "zfssa_explorer_{}_{}"
+                             .format(config['ip'],
+                                     datetime.now().strftime("%d%m%y_%H%M%S")))
     group1 = [("{}/system/v1/version".format(ZFSURL), "version"),
               ("{}/hardware/v1/cluster".format(ZFSURL), "cluster"),
               ("{}/problem/v1/problems".format(ZFSURL), "problems"),
