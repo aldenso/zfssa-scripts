@@ -758,15 +758,18 @@ def main(args):
                     progbar.update(initial)
                 else:
                     printdata(data, datatype)
-        with ZipFile('{}.zip'.format(OUTPUTDIR), 'w') as outzip:
-            for root, _, files in os.walk(OUTPUTDIR):
-                for file in files:
-                    outzip.write(os.path.join(root, file))
-                    os.remove(os.path.join(root, file))
+        try:
+            with ZipFile('{}.zip'.format(OUTPUTDIR), 'w') as outzip:
+                for root, _, files in os.walk(OUTPUTDIR):
+                    for file in files:
+                        outzip.write(os.path.join(root, file))
+                        os.remove(os.path.join(root, file))
+        except FileNotFoundError as err:
+            print("Nothing to compress: {}".format(err))
         try:
             os.rmdir(OUTPUTDIR)
         except FileNotFoundError as err:
-            print("Nothing to remove")
+            print("Nothing to remove: {}".format(err))
         if progbar:
             progbar.finish()
 

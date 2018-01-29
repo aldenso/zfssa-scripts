@@ -53,7 +53,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     zfssalist = get_zfssalist(args.directory)
     for schedtime in args.time:
-        print(schedtime, zfssalist)
+        print("Scheduled: {} {}".format(schedtime, zfssalist))
         schedule.every().day.at(schedtime).do(launch_explorers, zfssalist)
     while True:
         schedule.run_pending()
