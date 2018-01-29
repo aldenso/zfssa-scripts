@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 import os
+from datetime import datetime
 import argparse
 import time
 import schedule
@@ -49,6 +50,7 @@ class Namespace:
 
 
 if __name__ == "__main__":
+    print("Started at: {}".format(datetime.now()))
     parser = create_parser()
     args = parser.parse_args()
     zfssalist = get_zfssalist(args.directory)

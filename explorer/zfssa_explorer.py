@@ -777,4 +777,5 @@ def main(args):
 if __name__ == "__main__":
     parser = create_parser()
     args = parser.parse_args()
+    print("explorer for: {}".format(args.server))
     main(args)

@@ -61,3 +61,60 @@ Results in csv format are generated in a zip file.
 ```text
 zfssa_explorer_192.168.56.150_100717_152438.zip
 ```
+
+## Using the explorer in a docker container
+
+* Step 1:
+
+Clone the repository to your docker host.
+
+```sh
+git clone https://github.com/aldenso/zfssa-scripts
+```
+
+* Step 2:
+
+Change the directory to the repository and create a couple of directories to store the zfssa yaml configurations and the output zip files, also adjust what you want (ex: timezone in Dockerfile, scheduled times, etc).
+
+```sh
+cd zfssa-scripts
+mkdir /tmp/datazfssa /tmp/zfssa_servers
+cp yourzfssa01.yml yourzfssa02.yml ... /tmp/zfssa_servers # You can use server.yml as a template for your new files
+```
+
+Adjust timezone and times if you want:
+
+```Dockerfile
+RUN cp /usr/share/zoneinfo/America/Caracas /etc/localtime
+RUN echo "America/Caracas" >  /etc/timezone
+.
+.
+.
+ENTRYPOINT ["python", "-u", "explorer_scheduler.py", "-d", "/zfssa-scripts/servers", "-t", "10:00", "-t", "22:00"]
+```
+
+* Step 3:
+
+Build the image.
+
+```sh
+sudo docker build -t yourname/zfssaexplorer explorer
+```
+
+* Step 4:
+
+Run a container using volumes according to what you defined.
+
+```sh
+sudo docker run -d -v /tmp/datazfssa:/zfssa-scripts/data \
+-v /tmp/zfssa_servers:/zfssa-scripts/servers yourname/zfssaexplorer
+```
+
+* Step 5:
+
+Check your outputs:
+
+```sh
+ls -lrth /tmp/datazfssa
+sudo docker logs <containerid>
+```
