@@ -10,6 +10,7 @@ from datetime import datetime
 import argparse
 import time
 import schedule
+import inotify.adapters
 import zfssa_explorer
 
 
@@ -48,6 +49,25 @@ class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
+def check_changes(directory):
+    i = inotify.adapters.Inotify()
+
+    i.add_watch(directory)
+
+    for event in i.event_gen(yield_nones=False):
+        (_, etype, _, _) = event
+
+        if 'IN_DELETE' in etype or 'IN_MODIFY' in etype or 'IN_MOVED' in etype\
+            or 'IN_CREATE' in etype:
+            schedule.clear()
+            print("---- Removed previous schedules ----")
+            print("++++ Scheduled: {} {} ++++".format(schedtime, zfssa))
+            zfssanewlist = get_zfssalist(directory)
+            for stime in args.time:
+                for zfs in zfssanewlist:
+                    print("Scheduled: {} {}".format(stime, zfs))
+                schedule.every().day.at(stime).do(launch_explorers, zfssalist)
+
 
 if __name__ == "__main__":
     print("Started at: {}".format(datetime.now()))
@@ -55,8 +75,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
     zfssalist = get_zfssalist(args.directory)
     for schedtime in args.time:
-        print("Scheduled: {} {}".format(schedtime, zfssalist))
         schedule.every().day.at(schedtime).do(launch_explorers, zfssalist)
+        for zfssa in zfssalist:
+            print("++++ Scheduled: {} {} ++++".format(schedtime, zfssa))
+        check_changes(args.directory)
     while True:
         schedule.run_pending()
         time.sleep(1)
