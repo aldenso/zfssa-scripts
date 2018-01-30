@@ -57,15 +57,14 @@ def check_changes(directory):
     for event in i.event_gen(yield_nones=False):
         (_, etype, _, _) = event
 
-        if 'IN_DELETE' in etype or 'IN_MODIFY' in etype or 'IN_MOVED' in etype\
-            or 'IN_CREATE' in etype:
+        if 'IN_DELETE' in etype or 'IN_MODIFY' in etype or 'IN_MOVED_TO' in \
+        etype or 'IN_MOVED_FROM' in etype or 'IN_CREATE' in etype:
             schedule.clear()
             print("---- Removed previous schedules ----")
-            print("++++ Scheduled: {} {} ++++".format(schedtime, zfssa))
             zfssanewlist = get_zfssalist(directory)
             for stime in args.time:
                 for zfs in zfssanewlist:
-                    print("Scheduled: {} {}".format(stime, zfs))
+                    print("++++ Scheduled: {} {} ++++".format(stime, zfs))
                 schedule.every().day.at(stime).do(launch_explorers, zfssalist)
 
 
