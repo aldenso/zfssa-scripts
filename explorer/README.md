@@ -1,5 +1,4 @@
-zfssa_explorer.py
-==============
+# zfssa_explorer.py
 
 Script to get ZFS Storage Appliance info (tested on OS8.6 and OS8.7).
 
@@ -108,6 +107,13 @@ Run a container using volumes according to what you defined.
 ```sh
 sudo docker run -d -v /tmp/datazfssa:/zfssa-scripts/data \
 -v /tmp/zfssa_servers:/zfssa-scripts/servers yourname/zfssaexplorer
+```
+
+or change the ENVs for your convenience.
+
+```sh
+sudo docker run -d -v /tmp/datazfssa:/zfssa-scripts/data \
+-v /tmp/zfssa_servers:/zfssa-scripts/servers -e TIMES="09:00 16:00" yourname/zfssaexplorer
 ```
 
 * Step 5:

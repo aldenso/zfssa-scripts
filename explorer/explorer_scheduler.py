@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 import argparse
 import time
+import threading
 import schedule
 import inotify.adapters
 import zfssa_explorer
@@ -21,7 +22,7 @@ def create_parser():
     parser.add_argument("-d", "--directory", type=str,
                         help="Directory to find Server config files (YAML)",
                         required=True)
-    parser.add_argument("-t", "--time", action='append',
+    parser.add_argument("-t", "--time", nargs='+',
                         help="24Hr time where the Job should be launched",
                         required=True)
     return parser
@@ -49,23 +50,39 @@ class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-def check_changes(directory):
-    i = inotify.adapters.Inotify()
 
-    i.add_watch(directory)
+class ThreadingInotify(object):
+    """ Threading inotify"""
 
-    for event in i.event_gen(yield_nones=False):
-        (_, etype, _, _) = event
+    def __init__(self, directory, interval=1):
+        self.directory = directory
+        self.interval = interval
 
-        if 'IN_DELETE' in etype or 'IN_MODIFY' in etype or 'IN_MOVED_TO' in \
-        etype or 'IN_MOVED_FROM' in etype or 'IN_CREATE' in etype:
-            schedule.clear()
-            print("---- Removed previous schedules ----")
-            zfssanewlist = get_zfssalist(directory)
-            for stime in args.time:
-                for zfs in zfssanewlist:
-                    print("++++ Scheduled: {} {} ++++".format(stime, zfs))
-                schedule.every().day.at(stime).do(launch_explorers, zfssalist)
+        thread = threading.Thread(target=self.run, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start()                                  # Start the execution
+
+    def run(self):
+        """ Method that runs forever """
+        while True:
+            i = inotify.adapters.Inotify()
+
+            i.add_watch(self.directory)
+
+            for event in i.event_gen(yield_nones=False):
+                (_, etype, _, _) = event
+
+                if 'IN_DELETE' in etype or 'IN_MODIFY' in etype or 'IN_MOVED_TO' in \
+                etype or 'IN_MOVED_FROM' in etype or 'IN_CREATE' in etype:
+                    schedule.clear()
+                    print("---- Removed previous schedules ----")
+                    zfssanewlist = get_zfssalist(self.directory)
+                    for stime in args.time:
+                        for zfs in zfssanewlist:
+                            print("++++ Scheduled: {} {} ++++".format(stime, zfs))
+                        schedule.every().day.at(stime).do(launch_explorers, zfssalist)
+
+            time.sleep(self.interval)
 
 
 if __name__ == "__main__":
@@ -77,7 +94,7 @@ if __name__ == "__main__":
         schedule.every().day.at(schedtime).do(launch_explorers, zfssalist)
         for zfssa in zfssalist:
             print("++++ Scheduled: {} {} ++++".format(schedtime, zfssa))
-        check_changes(args.directory)
     while True:
+        ThreadingInotify(args.directory)
         schedule.run_pending()
         time.sleep(1)
