@@ -94,7 +94,7 @@ if __name__ == "__main__":
         schedule.every().day.at(schedtime).do(launch_explorers, zfssalist)
         for zfssa in zfssalist:
             print("++++ Scheduled: {} {} ++++".format(schedtime, zfssa))
+    ThreadingInotify(args.directory)
     while True:
-        ThreadingInotify(args.directory)
         schedule.run_pending()
         time.sleep(1)
