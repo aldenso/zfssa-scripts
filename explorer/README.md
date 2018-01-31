@@ -12,6 +12,8 @@ username: root
 password: password
 ```
 
+Not necessarily root, just any user with a basic role for visualization.
+
 Usage:
 
 ```text
@@ -86,10 +88,6 @@ Adjust timezone and times if you want:
 ```Dockerfile
 RUN cp /usr/share/zoneinfo/America/Caracas /etc/localtime
 RUN echo "America/Caracas" >  /etc/timezone
-.
-.
-.
-ENTRYPOINT ["python", "-u", "explorer_scheduler.py", "-d", "/zfssa-scripts/servers", "-t", "10:00", "-t", "22:00"]
 ```
 
 * Step 3:
